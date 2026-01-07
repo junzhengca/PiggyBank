@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Download, Database, Trash2, AlertCircle } from 'lucide-react';
-import { ExportData, ImportResult } from '@/types';
-import { db as dexieDb } from '@/db';
+import { ImportResult } from '@/types';
+import { downloadExport, importDataFromFile, clearAllData } from '@/lib/importExportService';
 
 export default function Settings() {
   const accounts = useAppSelector((state) => state.accounts.accounts);
@@ -15,94 +15,58 @@ export default function Settings() {
   const transactions = useAppSelector((state) => state.transactions.transactions);
   const budgets = useAppSelector((state) => state.budgets.budgets);
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
-  const handleExport = () => {
-    const exportData: ExportData = {
-      version: '1.0.0',
-      exportDate: new Date().toISOString(),
-      accounts,
-      categories,
-      tags,
-      transactions,
-      budgets,
-    };
-
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `piggybank-export-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      await downloadExport();
+    } catch (error) {
+      alert('Failed to export data: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
-  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const data: ExportData = JSON.parse(event.target?.result as string);
-        
-        // Validate data structure
-        if (!data.version || !data.accounts || !data.categories || !data.transactions) {
-          throw new Error('Invalid file format');
-        }
+    setIsImporting(true);
+    setImportResult(null);
 
-        // Clear existing data
-        await dexieDb.accounts.clear();
-        await dexieDb.categories.clear();
-        await dexieDb.tags.clear();
-        await dexieDb.transactions.clear();
-        await dexieDb.budgets.clear();
+    try {
+      const result = await importDataFromFile(file);
+      setImportResult(result);
 
-        // Import new data
-        await dexieDb.accounts.bulkAdd(data.accounts);
-        await dexieDb.categories.bulkAdd(data.categories);
-        await dexieDb.tags.bulkAdd(data.tags || []);
-        await dexieDb.transactions.bulkAdd(data.transactions);
-        await dexieDb.budgets.bulkAdd(data.budgets || []);
-
-        // Reload data
-        window.location.reload();
-
-        setImportResult({
-          success: true,
-          message: 'Data imported successfully!',
-          imported: {
-            accounts: data.accounts.length,
-            categories: data.categories.length,
-            tags: data.tags?.length || 0,
-            transactions: data.transactions.length,
-            budgets: data.budgets?.length || 0,
-          },
-        });
-      } catch (error) {
-        setImportResult({
-          success: false,
-          message: error instanceof Error ? error.message : 'Failed to import data',
-          imported: { accounts: 0, categories: 0, tags: 0, transactions: 0, budgets: 0 },
-          errors: [error instanceof Error ? error.message : 'Unknown error'],
-        });
+      if (result.success) {
+        // Reload page to refresh data from database
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      setImportResult({
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to import data',
+        imported: { accounts: 0, categories: 0, tags: 0, transactions: 0, budgets: 0 },
+        errors: [error instanceof Error ? error.message : 'Unknown error'],
+      });
+    } finally {
+      setIsImporting(false);
+      // Reset file input
+      e.target.value = '';
+    }
   };
 
   const handleClearData = async () => {
     if (confirm('Are you sure you want to clear all data? This action cannot be undone.')) {
       try {
-        await dexieDb.accounts.clear();
-        await dexieDb.categories.clear();
-        await dexieDb.tags.clear();
-        await dexieDb.transactions.clear();
-        await dexieDb.budgets.clear();
+        await clearAllData();
         window.location.reload();
       } catch (error) {
-        alert('Failed to clear data: ' + error);
+        alert('Failed to clear data: ' + (error instanceof Error ? error.message : 'Unknown error'));
       }
     }
   };
@@ -164,9 +128,9 @@ export default function Settings() {
             <p className="text-xs text-muted-foreground">
               Download all your data as a JSON file. You can use this file to backup your data or transfer it to another device.
             </p>
-            <Button onClick={handleExport} className="w-full">
+            <Button onClick={handleExport} disabled={isExporting} className="w-full">
               <Download className="h-4 w-4 mr-2" />
-              Export Data
+              {isExporting ? 'Exporting...' : 'Export Data'}
             </Button>
           </div>
 
@@ -180,14 +144,20 @@ export default function Settings() {
               type="file"
               accept=".json"
               onChange={handleImport}
+              disabled={isImporting}
               className="cursor-pointer"
             />
+            {isImporting && (
+              <p className="text-xs text-muted-foreground mt-2">Importing data...</p>
+            )}
           </div>
 
           {importResult && (
             <div
               className={`p-3 flex items-start space-x-2 ${
-                importResult.success ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+                importResult.success
+                  ? 'bg-green-50 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                  : 'bg-red-50 text-red-800 dark:bg-destructive/20 dark:text-destructive'
               }`}
             >
               {importResult.success ? (

@@ -9,7 +9,19 @@ import { getPeriodStartDate } from '@/lib/utils';
 
 type AnalyticsPeriod = 'weekly' | 'monthly' | 'yearly';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#6366f1', '#14b8a6', '#f97316'];
+// Theme-aware colors that work well on both light and dark themes
+const COLORS = [
+  'hsl(262 83% 58%)',  // primary
+  'hsl(142 76% 45%)',  // success
+  'hsl(38 92% 55%)',   // warning
+  'hsl(0 72% 50%)',    // destructive
+  'hsl(217 91% 60%)',  // blue
+  'hsl(280 70% 60%)',  // purple
+  'hsl(180 70% 50%)',  // cyan
+  'hsl(340 75% 55%)',  // pink
+  'hsl(160 70% 45%)',  // teal
+  'hsl(30 90% 55%)',   // orange
+];
 
 export default function Analytics() {
   const transactions = useAppSelector((state) => state.transactions.transactions);
@@ -111,20 +123,20 @@ export default function Analytics() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Total Income</CardTitle>
-            <TrendingUp className="h-3.5 w-3.5 text-green-500" />
+            <TrendingUp className="h-3.5 w-3.5 text-green-500 dark:text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold text-green-600 amount">${totalIncome.toFixed(2)}</div>
+            <div className="text-lg font-bold text-green-600 dark:text-green-400 amount">${totalIncome.toFixed(2)}</div>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-xs font-medium">Total Expenses</CardTitle>
-            <TrendingDown className="h-3.5 w-3.5 text-red-500" />
+            <TrendingDown className="h-3.5 w-3.5 text-destructive" />
           </CardHeader>
           <CardContent>
-            <div className="text-lg font-bold text-red-600 amount">${totalExpense.toFixed(2)}</div>
+            <div className="text-lg font-bold text-destructive amount">${totalExpense.toFixed(2)}</div>
           </CardContent>
         </Card>
         
@@ -134,7 +146,7 @@ export default function Analytics() {
             <PieChartIcon className="h-3.5 w-3.5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-lg font-bold amount ${totalIncome - totalExpense >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`text-lg font-bold amount ${totalIncome - totalExpense >= 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
               ${(totalIncome - totalExpense).toFixed(2)}
             </div>
           </CardContent>
@@ -149,15 +161,34 @@ export default function Analytics() {
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={incomeExpenseData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} />
-              <XAxis dataKey="period" />
-              <YAxis />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="hsl(var(--border))"
+              />
+              <XAxis
+                dataKey="period"
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+              />
+              <YAxis
+                stroke="hsl(var(--muted-foreground))"
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 12 }}
+                axisLine={{ stroke: 'hsl(var(--border))' }}
+              />
               <Tooltip
                 formatter={(value: number) => `$${value.toFixed(2)}`}
-                contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--popover))',
+                  border: '1px solid hsl(var(--border))',
+                  color: 'hsl(var(--popover-foreground))',
+                  borderRadius: '0.5rem'
+                }}
+                itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
               />
-              <Bar dataKey="income" fill="#22c55e" name="Income" />
-              <Bar dataKey="expense" fill="#ef4444" name="Expenses" />
+              <Bar dataKey="income" fill="hsl(var(--success))" name="Income" />
+              <Bar dataKey="expense" fill="hsl(var(--destructive))" name="Expenses" />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -179,7 +210,16 @@ export default function Analytics() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={(entry) => `${entry.name}: $${entry.value.toFixed(0)}`}
+                  label={(entry) => (
+                    <text
+                      fill="hsl(var(--foreground))"
+                      fontSize={11}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                    >
+                      {`${entry.name}: $${entry.value.toFixed(0)}`}
+                    </text>
+                  )}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -190,9 +230,18 @@ export default function Analytics() {
                 </Pie>
                 <Tooltip
                   formatter={(value: number) => `$${value.toFixed(2)}`}
-                  contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))' }}
+                  contentStyle={{
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    color: 'hsl(var(--popover-foreground))',
+                    borderRadius: '0.5rem'
+                  }}
+                  itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
                 />
-                <Legend />
+                <Legend
+                  wrapperStyle={{ color: 'hsl(var(--foreground))', fontSize: 12 }}
+                  iconType="circle"
+                />
               </PieChart>
             </ResponsiveContainer>
           )}

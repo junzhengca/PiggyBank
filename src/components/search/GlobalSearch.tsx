@@ -8,12 +8,9 @@ import { useAppSelector } from '@/store/hooks';
 import {
   Search,
   Wallet,
-  LayoutList,
-  PieChart,
   Target,
   ArrowRight,
-  X,
-  Command
+  X
 } from 'lucide-react';
 
 interface SearchItem {
@@ -64,8 +61,8 @@ export function GlobalSearch({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         title: tx.vendor,
         subtitle: `${formatDisplayDate(tx.date)} • $${tx.amount.toFixed(2)}`,
         icon: tx.type === 'income' ?
-          <ArrowRight className="h-4 w-4 text-green-500" /> : 
-          <ArrowRight className="h-4 w-4 text-red-500 rotate-180" />,
+          <ArrowRight className="h-4 w-4 text-green-500 dark:text-green-400" /> :
+          <ArrowRight className="h-4 w-4 text-destructive rotate-180" />,
         path: '/transactions',
       })),
       ...categories.map(cat => ({

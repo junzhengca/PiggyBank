@@ -1,6 +1,6 @@
 import Dexie, { Table } from 'dexie';
 import { Account, Category, Tag, Transaction, Budget } from '@/types';
-import { DB_NAME, DB_VERSION } from '@/types/constants';
+import { DB_NAME } from '@/types/constants';
 
 export class PiggyBankDB extends Dexie {
   accounts!: Table<Account>;

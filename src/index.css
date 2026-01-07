@@ -54,7 +54,7 @@
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 262 83% 20%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 72% 50%;
     --destructive-foreground: 210 40% 98%;
     --success: 142 76% 45%;
     --success-foreground: 210 40% 98%;
@@ -314,6 +314,10 @@
     @apply bg-muted/50;
   }
 
+  .dark .excel-row:hover {
+    @apply bg-white/10;
+  }
+
   /* Amount styling with monospace font */
   .amount {
     @apply font-mono font-medium tabular-nums;
@@ -346,8 +350,16 @@
     @apply w-full border border-border;
   }
 
+  .dark .excel-table {
+    @apply border-white/20;
+  }
+
   .excel-table-header {
     @apply flex items-center bg-muted/80 border-b border-border font-semibold text-sm text-muted-foreground;
+  }
+
+  .dark .excel-table-header {
+    @apply border-b-white/20;
   }
 
   .excel-table-header-cell {
@@ -358,8 +370,16 @@
     @apply divide-y divide-border;
   }
 
+  .dark .excel-table-body {
+    @apply divide-y divide-white/20;
+  }
+
   .excel-table-row {
     @apply flex items-center hover:bg-muted/50 transition-colors duration-150;
+  }
+
+  .dark .excel-table-row:hover {
+    @apply hover:bg-white/10;
   }
 
   .excel-table-cell {

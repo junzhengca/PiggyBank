@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useCallback, useState, ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Shortcut, SHORTCUTS, matchesShortcut } from './shortcuts';
+import { Shortcut, matchesShortcut } from './shortcuts';
 
 interface KeyboardShortcutsContextType {
   registerShortcut: (shortcut: Shortcut) => void;

@@ -177,7 +177,7 @@ export default function Budgets() {
             </CardContent>
           </Card>
         ) : (
-          budgetsWithProgress.map((budget, index) => (
+          budgetsWithProgress.map((budget) => (
             <Card key={budget.id}>
               <CardHeader>
                 <div className="flex items-center justify-between">

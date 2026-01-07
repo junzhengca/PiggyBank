@@ -226,7 +226,7 @@ export default function Accounts() {
       </div>
 
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account: Account, index) => {
+        {accounts.map((account: Account) => {
           const needsReview = isAccountNeedsReview(account.lastReviewedAt);
           const isCreditCard = account.type === 'credit';
           const availableCredit = isCreditCard && account.creditCardDetails?.creditLimit

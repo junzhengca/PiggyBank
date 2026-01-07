@@ -15,8 +15,7 @@ import {
   Settings as SettingsIcon,
   Plus,
   Search,
-  Keyboard,
-  Command
+  Keyboard
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Dashboard from '@/features/dashboard/Dashboard';
