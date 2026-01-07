@@ -15,7 +15,8 @@ import {
   Settings as SettingsIcon,
   Plus,
   Search,
-  Keyboard
+  Keyboard,
+  Tag
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Dashboard from '@/features/dashboard/Dashboard';
@@ -26,6 +27,7 @@ import Categories from '@/features/categories/Categories';
 import Budgets from '@/features/budgets/Budgets';
 import Analytics from '@/features/analytics/Analytics';
 import Settings from '@/features/settings/Settings';
+import Tags from '@/features/tags/Tags';
 import { KeyboardShortcutsProvider } from '@/components/keyboard/KeyboardShortcutsProvider';
 import { KeyboardHelpDialog } from '@/components/keyboard/KeyboardHelpDialog';
 import { GlobalSearch } from '@/components/search/GlobalSearch';
@@ -39,6 +41,7 @@ const navItems = [
   { path: '/categories', label: 'Categories', icon: PieChart, shortcut: '4' },
   { path: '/budgets', label: 'Budgets', icon: PieChart, shortcut: '5' },
   { path: '/analytics', label: 'Analytics', icon: PieChart, shortcut: '6' },
+  { path: '/tags', label: 'Tags', icon: Tag, shortcut: '8' },
   { path: '/settings', label: 'Settings', icon: SettingsIcon, shortcut: '7' },
 ];
 
@@ -173,6 +176,7 @@ function LayoutContent() {
             <Route path="/categories" element={<Categories />} />
             <Route path="/budgets" element={<Budgets />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/tags" element={<Tags />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </main>

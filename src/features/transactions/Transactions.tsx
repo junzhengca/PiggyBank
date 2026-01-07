@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MultiSelect } from '@/components/ui/multi-select';
 import { Plus, Trash2, Filter, Search, ArrowUp, ArrowDown, TrendingUp, TrendingDown, Edit } from 'lucide-react';
 import { Transaction, TransactionType } from '@/types';
 import { parseLocalDate, formatLocalDate, formatDisplayDate, getTodayDateString } from '@/lib/utils';
@@ -16,6 +17,7 @@ export default function Transactions() {
   const transactions = useAppSelector((state) => state.transactions.transactions);
   const accounts = useAppSelector((state) => state.accounts.accounts);
   const categories = useAppSelector((state) => state.categories.categories);
+  const tags = useAppSelector((state) => state.tags.tags);
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -250,6 +252,15 @@ export default function Transactions() {
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                   />
                 </div>
+                <div>
+                  <Label htmlFor="tags">Tags</Label>
+                  <MultiSelect
+                    options={tags.map(tag => ({ value: tag.id, label: tag.name, color: tag.color }))}
+                    selectedValues={formData.tagIds}
+                    onChange={(values) => setFormData({ ...formData, tagIds: values })}
+                    placeholder="Select tags (optional)"
+                  />
+                </div>
                 <Button type="submit" className="w-full shadow-lg">
                   {isEditing ? 'Update Transaction' : 'Add Transaction'}
                 </Button>
@@ -291,6 +302,7 @@ export default function Transactions() {
                 <div className="excel-table-header-cell col-icon"></div>
                 <div className="excel-table-header-cell col-vendor">Vendor</div>
                 <div className="excel-table-header-cell col-category">Category</div>
+                <div className="excel-table-header-cell col-tags">Tags</div>
                 <div className="excel-table-header-cell col-date">Date</div>
                 <div className="excel-table-header-cell col-type">Type</div>
                 <div className="excel-table-header-cell col-amount">Amount</div>
@@ -300,6 +312,7 @@ export default function Transactions() {
               <div className="excel-table-body">
                 {filteredTransactions.map((transaction) => {
                   const category = categories.find((c) => c.id === transaction.categoryId);
+                  const transactionTags = tags.filter(tag => transaction.tagIds.includes(tag.id));
                   return (
                     <div key={transaction.id} className="excel-table-row group">
                       <div className="excel-table-cell col-icon">
@@ -312,6 +325,23 @@ export default function Transactions() {
                       </div>
                       <div className="excel-table-cell col-category">
                         <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
+                      </div>
+                      <div className="excel-table-cell col-tags">
+                        <div className="flex flex-wrap gap-1">
+                          {transactionTags.length === 0 ? (
+                            <span className="text-muted-foreground text-xs">-</span>
+                          ) : (
+                            transactionTags.map(tag => (
+                              <span
+                                key={tag.id}
+                                className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium text-white"
+                                style={{ backgroundColor: tag.color }}
+                              >
+                                {tag.name}
+                              </span>
+                            ))
+                          )}
+                        </div>
                       </div>
                       <div className="excel-table-cell col-date">
                         <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>

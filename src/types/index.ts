@@ -136,6 +136,13 @@ export interface CategorySpending {
   percentage: number;
 }
 
+export interface TagSpending {
+  tagId: string;
+  tagName: string;
+  amount: number;
+  percentage: number;
+}
+
 export interface IncomeExpenseData {
   period: string;
   income: number;
@@ -146,6 +153,7 @@ export interface IncomeExpenseData {
 export interface AnalyticsData {
   incomeExpense: IncomeExpenseData[];
   categorySpending: CategorySpending[];
+  tagSpending: TagSpending[];
   totalIncome: number;
   totalExpense: number;
   netIncome: number;

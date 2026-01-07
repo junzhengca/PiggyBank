@@ -390,6 +390,7 @@
   .col-icon { @apply flex-shrink-0 pr-2; }
   .col-vendor { @apply flex-1 min-w-[120px]; }
   .col-category { @apply w-32 flex-shrink-0; }
+  .col-tags { @apply w-48 flex-shrink-0; }
   .col-date { @apply w-28 flex-shrink-0; }
   .col-type { @apply w-20 flex-shrink-0; }
   .col-amount { @apply w-28 flex-shrink-0 text-right; }
