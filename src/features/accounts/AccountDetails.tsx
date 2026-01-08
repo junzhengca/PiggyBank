@@ -13,8 +13,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ArrowLeft, Edit2, Trash2, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ArrowUp, ArrowDown, TrendingDown, CheckCircle, AlertTriangle, Calculator } from 'lucide-react';
 import { ACCOUNT_TYPES } from '@/types/constants';
 import { TransactionFormData, AccountType } from '@/types';
-import { parseLocalDate, formatDisplayDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
+import { parseLocalDate, formatDisplayDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed, groupTransactionsByDate, sortDateKeysDesc } from '@/lib/utils';
 import DebtRepaymentCalculator from './DebtRepaymentCalculator';
+import { TransactionDayHeader } from '@/components/transactions/TransactionDayHeader';
 
 const accountIcons: Record<string, JSX.Element> = {
   checking: <Wallet className="h-5 w-5" />,
@@ -155,6 +156,20 @@ export default function AccountDetails() {
     if (confirm('Are you sure you want to delete this transaction?')) {
       dispatch(deleteTransaction(transactionId));
     }
+  };
+
+  const handleAddTransactionForDate = (dateString: string) => {
+    setTransactionFormData({
+      accountId: id || '',
+      categoryId: '',
+      amount: '',
+      type: 'expense',
+      date: dateString,
+      vendor: '',
+      notes: '',
+      tagIds: [],
+    });
+    setIsAddTransactionOpen(true);
   };
 
   const handleMarkAsReviewed = () => {
@@ -590,50 +605,72 @@ export default function AccountDetails() {
                 <div className="excel-table-header-cell col-amount">Amount</div>
                 <div className="excel-table-header-cell w-12 flex-shrink-0"></div>
               </div>
-              {/* Table Body */}
+              {/* Table Body with Day Grouping */}
               <div className="excel-table-body">
-                {transactions.map((transaction) => {
-                  const category = categories.find((c) => c.id === transaction.categoryId);
-                  return (
-                    <div key={transaction.id} className="excel-table-row group">
-                      <div className="excel-table-cell col-icon">
-                        <div className={`icon-cell ${transaction.type === 'income' ? 'icon-income' : 'icon-expense'}`}>
-                          {category?.icon || '💰'}
-                        </div>
+                {(() => {
+                  const grouped = groupTransactionsByDate(transactions);
+                  const sortedDates = sortDateKeysDesc(Array.from(grouped.keys()));
+                  
+                  return sortedDates.map((dateKey) => {
+                    const dayTransactions = grouped.get(dateKey)!;
+                    const date = parseLocalDate(dateKey);
+                    
+                    return (
+                      <div key={dateKey}>
+                        {/* Sticky Day Header */}
+                        <TransactionDayHeader
+                          date={date}
+                          transactionCount={dayTransactions.length}
+                          onAddClick={() => handleAddTransactionForDate(dateKey)}
+                        />
+                        
+                        {/* Transactions for this day */}
+                        {dayTransactions.map((transaction) => {
+                          const category = categories.find((c) => c.id === transaction.categoryId);
+                          return (
+                            <div key={transaction.id} className="excel-table-row group">
+                              <div className="excel-table-cell col-icon">
+                                <div className={`icon-cell ${transaction.type === 'income' ? 'icon-income' : 'icon-expense'}`}>
+                                  {category?.icon || '💰'}
+                                </div>
+                              </div>
+                              <div className="excel-table-cell col-vendor">
+                                <span className="font-semibold">{transaction.vendor}</span>
+                              </div>
+                              <div className="excel-table-cell col-category hide-on-mobile">
+                                <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
+                              </div>
+                              <div className="excel-table-cell col-date">
+                                <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>
+                              </div>
+                              <div className="excel-table-cell col-type hide-on-mobile">
+                                <div className={`flex items-center gap-2 text-xs font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
+                                  {transaction.type === 'income' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
+                                  {transaction.type}
+                                </div>
+                              </div>
+                              <div className="excel-table-cell col-amount">
+                                <span className={`amount font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
+                                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
+                                </span>
+                              </div>
+                              <div className="excel-table-cell w-12 flex-shrink-0">
+                                <Button
+                                  size="icon"
+                                  variant="ghost"
+                                  onClick={() => handleTransactionDelete(transaction.id)}
+                                  className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="excel-table-cell col-vendor">
-                        <span className="font-semibold">{transaction.vendor}</span>
-                      </div>
-                      <div className="excel-table-cell col-category hide-on-mobile">
-                        <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
-                      </div>
-                      <div className="excel-table-cell col-date">
-                        <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>
-                      </div>
-                      <div className="excel-table-cell col-type hide-on-mobile">
-                        <div className={`flex items-center gap-2 text-xs font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                          {transaction.type === 'income' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                          {transaction.type}
-                        </div>
-                      </div>
-                      <div className="excel-table-cell col-amount">
-                        <span className={`amount font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                        </span>
-                      </div>
-                      <div className="excel-table-cell w-12 flex-shrink-0">
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          onClick={() => handleTransactionDelete(transaction.id)}
-                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
           )}

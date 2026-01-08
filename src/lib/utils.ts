@@ -1,5 +1,6 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
+import { Transaction } from '@/types'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -129,4 +130,54 @@ export function formatLastReviewed(lastReviewedAt: Date | undefined): string {
   } else {
     return `Reviewed on ${formatDisplayDate(lastReviewedAt)}`;
   }
+}
+
+/**
+ * Groups transactions by date string (YYYY-MM-DD)
+ * Returns a Map where keys are date strings and values are arrays of transactions
+ */
+export function groupTransactionsByDate(transactions: Transaction[]): Map<string, Transaction[]> {
+  const grouped = new Map<string, Transaction[]>();
+  
+  transactions.forEach(transaction => {
+    const dateKey = formatLocalDate(transaction.date);
+    if (!grouped.has(dateKey)) {
+      grouped.set(dateKey, []);
+    }
+    grouped.get(dateKey)!.push(transaction);
+  });
+  
+  return grouped;
+}
+
+/**
+ * Formats a date for display in day headers
+ * Returns "Today", "Yesterday", or formatted date
+ */
+export function formatDayHeaderDate(date: Date): string {
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  
+  // Compare dates (ignoring time)
+  const compareDates = (d1: Date, d2: Date) => {
+    return d1.getUTCFullYear() === d2.getUTCFullYear() &&
+           d1.getUTCMonth() === d2.getUTCMonth() &&
+           d1.getUTCDate() === d2.getUTCDate();
+  };
+  
+  if (compareDates(date, today)) {
+    return 'Today';
+  } else if (compareDates(date, yesterday)) {
+    return 'Yesterday';
+  } else {
+    return formatDisplayDate(date);
+  }
+}
+
+/**
+ * Sorts date keys in descending order (newest first)
+ */
+export function sortDateKeysDesc(dateKeys: string[]): string[] {
+  return dateKeys.sort((a, b) => b.localeCompare(a));
 }

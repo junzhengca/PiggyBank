@@ -435,6 +435,35 @@
       @apply hidden;
     }
   }
+
+  /* Sticky day header for transaction grouping */
+  .sticky-day-header {
+    @apply sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border;
+  }
+
+  .dark .sticky-day-header {
+    @apply bg-card/95 border-white/20;
+  }
+
+  /* Day header content container */
+  .day-header-content {
+    @apply flex items-center justify-between px-3 py-2;
+  }
+
+  /* Day header date label */
+  .day-header-date {
+    @apply text-sm font-semibold text-foreground;
+  }
+
+  /* Day header transaction count */
+  .day-header-count {
+    @apply text-xs text-muted-foreground ml-2;
+  }
+
+  /* Day header add button */
+  .day-header-add-btn {
+    @apply h-7 px-2 text-xs;
+  }
 }
 
 /* Custom scrollbar for webkit browsers */
