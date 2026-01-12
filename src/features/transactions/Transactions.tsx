@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Plus, Trash2, Filter, Search, TrendingUp, TrendingDown, Edit } from 'lucide-react';
+import { Plus, Filter, Search, TrendingUp, TrendingDown } from 'lucide-react';
 import { Transaction, TransactionType } from '@/types';
 import { parseLocalDate, formatLocalDate, getTodayDateString } from '@/lib/utils';
 import { TransactionTable } from '@/components/transactions/TransactionTable';

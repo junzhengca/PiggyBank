@@ -160,7 +160,7 @@ export default function Categories() {
                 </div>
               ) : (
                 <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                  {expenseCategories.map((category, index) => (
+                  {expenseCategories.map((category) => (
                     <div
                       key={category.id}
                       className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"
@@ -214,7 +214,7 @@ export default function Categories() {
                 </div>
               ) : (
                 <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-                  {incomeCategories.map((category, index) => (
+                  {incomeCategories.map((category) => (
                     <div
                       key={category.id}
                       className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"

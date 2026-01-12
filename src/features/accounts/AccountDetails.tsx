@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAppDispatch, useAccounts, useTransactions, useCategories } from '@/store/hooks';
 import { updateAccount, deleteAccount, markAccountAsReviewed } from '@/store/slices/accountsSlice';
@@ -13,7 +13,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { ArrowLeft, Edit2, Trash2, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ArrowUp, TrendingDown, CheckCircle, AlertTriangle, Calculator } from 'lucide-react';
 import { ACCOUNT_TYPES } from '@/types/constants';
 import { TransactionFormData, AccountType, Account } from '@/types';
-import { parseLocalDate, formatDisplayDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
+import { parseLocalDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
 import DebtRepaymentCalculator from './DebtRepaymentCalculator';
 import { TransactionTable } from '@/components/transactions/TransactionTable';
 import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';

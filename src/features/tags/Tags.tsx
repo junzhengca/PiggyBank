@@ -116,7 +116,7 @@ export default function Tags() {
             </div>
           ) : (
             <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
-              {tags.map((tag, index) => (
+              {tags.map((tag) => (
                 <div
                   key={tag.id}
                   className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"

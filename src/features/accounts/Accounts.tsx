@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppDispatch, useAccounts } from '@/store/hooks';
 import { createAccount, deleteAccount, markAccountAsReviewed } from '@/store/slices/accountsSlice';

@@ -12,7 +12,7 @@ import { Plus, Trash2, Target, AlertTriangle, TrendingUp, Edit } from 'lucide-re
 import { BUDGET_PERIODS } from '@/types/constants';
 import { parseLocalDate, getTodayDateString, formatLocalDate, formatDisplayDate, calculateBudgetEndDate, isDateOnOrAfter, isDateOnOrBefore } from '@/lib/utils';
 import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
-import { Budget } from '@/types';
+import { Budget, BudgetPeriod } from '@/types';
 
 export default function Budgets() {
   const dispatch = useAppDispatch();
@@ -26,10 +26,15 @@ export default function Budgets() {
   const [isOpen, setIsOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const isEditing = editingBudget !== null;
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    categoryId: string;
+    amount: string;
+    period: BudgetPeriod;
+    startDate: string;
+  }>({
     categoryId: '',
     amount: '',
-    period: 'monthly' as const,
+    period: 'monthly',
     startDate: getTodayDateString(),
   });
 

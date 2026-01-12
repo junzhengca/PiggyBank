@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { TransactionTable } from '@/components/transactions/TransactionTable';
-import { formatDisplayDate, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
+import { isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
 import { Wallet, TrendingUp, TrendingDown, ArrowRight, PiggyBank, CreditCard, CheckCircle, AlertTriangle, CreditCard as CreditCardIcon } from 'lucide-react';
 import { markAccountAsReviewed } from '@/store/slices/accountsSlice';
 import { useNavigate } from 'react-router-dom';
