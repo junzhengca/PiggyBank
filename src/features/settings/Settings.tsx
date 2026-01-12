@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Download, Database, Trash2, AlertCircle } from 'lucide-react';
 import { ImportResult } from '@/types';
 import { downloadExport, importDataFromFile, clearAllData } from '@/lib/importExportService';
+import packageJson from '../../../package.json';
 
 export default function Settings() {
   const accounts = useAccounts();
@@ -211,7 +212,7 @@ export default function Settings() {
         <CardContent className="space-y-2">
           <div>
             <p className="font-medium text-sm">PiggyBank</p>
-            <p className="text-xs text-muted-foreground">Version 1.0.0</p>
+            <p className="text-xs text-muted-foreground">Version {packageJson.version}</p>
           </div>
           <div>
             <p className="text-xs text-muted-foreground">

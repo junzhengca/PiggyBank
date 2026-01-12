@@ -1,0 +1,500 @@
+{
+  "version": "1.0.0",
+  "exportDate": "2024-01-15T10:30:00.000Z",
+  "accounts": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "name": "RBC Checking",
+      "type": "checking",
+      "balance": 5420.50,
+      "currency": "CAD",
+      "color": "#0052CC",
+      "icon": "🏦",
+      "bankId": "rbc",
+      "lastReviewedAt": "2024-01-10T08:00:00.000Z",
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2024-01-10T08:00:00.000Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "name": "BMO Savings",
+      "type": "savings",
+      "balance": 12500.00,
+      "currency": "CAD",
+      "color": "#0066CC",
+      "icon": "💰",
+      "bankId": "bmo",
+      "lastReviewedAt": "2024-01-12T09:00:00.000Z",
+      "createdAt": "2023-05-15T10:00:00.000Z",
+      "updatedAt": "2024-01-12T09:00:00.000Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "name": "Capital One Credit Card",
+      "type": "credit",
+      "balance": -1250.75,
+      "currency": "CAD",
+      "color": "#FF6B35",
+      "icon": "💳",
+      "bankId": "capitalone",
+      "creditCardDetails": {
+        "interestRate": 19.99,
+        "statementDay": 15,
+        "creditLimit": 5000
+      },
+      "lastReviewedAt": "2024-01-14T14:00:00.000Z",
+      "createdAt": "2023-08-20T10:00:00.000Z",
+      "updatedAt": "2024-01-14T14:00:00.000Z"
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440004",
+      "name": "PC Financial Debit",
+      "type": "debit",
+      "balance": 850.25,
+      "currency": "CAD",
+      "color": "#00A859",
+      "icon": "💵",
+      "bankId": "pcfinancial",
+      "createdAt": "2023-09-10T10:00:00.000Z",
+      "updatedAt": "2024-01-13T16:00:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "name": "Salary",
+      "type": "income",
+      "color": "#22c55e",
+      "icon": "💰",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440002",
+      "name": "Freelance",
+      "type": "income",
+      "color": "#10b981",
+      "icon": "💼",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440003",
+      "name": "Investments",
+      "type": "income",
+      "color": "#3b82f6",
+      "icon": "📈",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440004",
+      "name": "Other Income",
+      "type": "income",
+      "color": "#64748b",
+      "icon": "💵",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440005",
+      "name": "Housing",
+      "type": "expense",
+      "color": "#ef4444",
+      "icon": "🏠",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440006",
+      "name": "Food & Dining",
+      "type": "expense",
+      "color": "#f97316",
+      "icon": "🍔",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440007",
+      "name": "Transportation",
+      "type": "expense",
+      "color": "#eab308",
+      "icon": "🚗",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440008",
+      "name": "Utilities",
+      "type": "expense",
+      "color": "#a855f7",
+      "icon": "💡",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440009",
+      "name": "Entertainment",
+      "type": "expense",
+      "color": "#ec4899",
+      "icon": "🎬",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440010",
+      "name": "Shopping",
+      "type": "expense",
+      "color": "#f43f5e",
+      "icon": "🛍️",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440011",
+      "name": "Health",
+      "type": "expense",
+      "color": "#06b6d4",
+      "icon": "🏥",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440012",
+      "name": "Education",
+      "type": "expense",
+      "color": "#6366f1",
+      "icon": "📚",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440013",
+      "name": "Personal Care",
+      "type": "expense",
+      "color": "#f59e0b",
+      "icon": "💄",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440014",
+      "name": "Travel",
+      "type": "expense",
+      "color": "#14b8a6",
+      "icon": "✈️",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440015",
+      "name": "Gifts",
+      "type": "expense",
+      "color": "#8b5cf6",
+      "icon": "🎁",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440016",
+      "name": "Other Expense",
+      "type": "expense",
+      "color": "#94a3b8",
+      "icon": "📦",
+      "isDefault": true,
+      "createdAt": "2023-06-01T10:00:00.000Z",
+      "updatedAt": "2023-06-01T10:00:00.000Z"
+    }
+  ],
+  "tags": [
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440001",
+      "name": "Recurring",
+      "color": "#3b82f6",
+      "createdAt": "2023-06-15T10:00:00.000Z",
+      "updatedAt": "2023-06-15T10:00:00.000Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440002",
+      "name": "Business",
+      "color": "#10b981",
+      "createdAt": "2023-07-01T10:00:00.000Z",
+      "updatedAt": "2023-07-01T10:00:00.000Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440003",
+      "name": "Personal",
+      "color": "#ec4899",
+      "createdAt": "2023-07-01T10:00:00.000Z",
+      "updatedAt": "2023-07-01T10:00:00.000Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440004",
+      "name": "Tax Deductible",
+      "color": "#f59e0b",
+      "createdAt": "2023-08-10T10:00:00.000Z",
+      "updatedAt": "2023-08-10T10:00:00.000Z"
+    },
+    {
+      "id": "770e8400-e29b-41d4-a716-446655440005",
+      "name": "Urgent",
+      "color": "#ef4444",
+      "createdAt": "2023-09-05T10:00:00.000Z",
+      "updatedAt": "2023-09-05T10:00:00.000Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440001",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440001",
+      "amount": 4500.00,
+      "type": "income",
+      "date": "2024-01-01T00:00:00.000Z",
+      "vendor": "Employer Inc.",
+      "notes": "Monthly salary",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440001", "770e8400-e29b-41d4-a716-446655440002"],
+      "createdAt": "2024-01-01T08:00:00.000Z",
+      "updatedAt": "2024-01-01T08:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440002",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440005",
+      "amount": 1200.00,
+      "type": "expense",
+      "date": "2024-01-02T00:00:00.000Z",
+      "vendor": "Landlord",
+      "notes": "Monthly rent",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440001"],
+      "createdAt": "2024-01-02T09:00:00.000Z",
+      "updatedAt": "2024-01-02T09:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440003",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440006",
+      "amount": 85.50,
+      "type": "expense",
+      "date": "2024-01-03T00:00:00.000Z",
+      "vendor": "Loblaws",
+      "notes": "Weekly groceries",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440001", "770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-03T14:00:00.000Z",
+      "updatedAt": "2024-01-03T14:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440004",
+      "accountId": "550e8400-e29b-41d4-a716-446655440003",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440007",
+      "amount": 45.00,
+      "type": "expense",
+      "date": "2024-01-04T00:00:00.000Z",
+      "vendor": "Petro Canada",
+      "notes": "Gas fill-up",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-04T16:00:00.000Z",
+      "updatedAt": "2024-01-04T16:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440005",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440008",
+      "amount": 125.75,
+      "type": "expense",
+      "date": "2024-01-05T00:00:00.000Z",
+      "vendor": "Hydro One",
+      "notes": "Electricity bill",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440001"],
+      "createdAt": "2024-01-05T10:00:00.000Z",
+      "updatedAt": "2024-01-05T10:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440006",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440009",
+      "amount": 28.50,
+      "type": "expense",
+      "date": "2024-01-06T00:00:00.000Z",
+      "vendor": "Cineplex",
+      "notes": "Movie tickets",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-06T20:00:00.000Z",
+      "updatedAt": "2024-01-06T20:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440007",
+      "accountId": "550e8400-e29b-41d4-a716-446655440003",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440010",
+      "amount": 199.99,
+      "type": "expense",
+      "date": "2024-01-07T00:00:00.000Z",
+      "vendor": "Amazon",
+      "notes": "New headphones",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-07T11:00:00.000Z",
+      "updatedAt": "2024-01-07T11:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440008",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440006",
+      "amount": 42.30,
+      "type": "expense",
+      "date": "2024-01-08T00:00:00.000Z",
+      "vendor": "Tim Hortons",
+      "notes": "Coffee and breakfast",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-08T08:30:00.000Z",
+      "updatedAt": "2024-01-08T08:30:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440009",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440011",
+      "amount": 150.00,
+      "type": "expense",
+      "date": "2024-01-09T00:00:00.000Z",
+      "vendor": "Dentist Office",
+      "notes": "Regular checkup",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440001", "770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-09T13:00:00.000Z",
+      "updatedAt": "2024-01-09T13:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440010",
+      "accountId": "550e8400-e29b-41d4-a716-446655440002",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440003",
+      "amount": 250.00,
+      "type": "income",
+      "date": "2024-01-10T00:00:00.000Z",
+      "vendor": "Dividend Payment",
+      "notes": "Quarterly dividend",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440002"],
+      "createdAt": "2024-01-10T09:00:00.000Z",
+      "updatedAt": "2024-01-10T09:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440011",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440007",
+      "amount": 95.00,
+      "type": "expense",
+      "date": "2024-01-11T00:00:00.000Z",
+      "vendor": "Uber",
+      "notes": "Rideshare expenses",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-11T18:00:00.000Z",
+      "updatedAt": "2024-01-11T18:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440012",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440002",
+      "amount": 800.00,
+      "type": "income",
+      "date": "2024-01-12T00:00:00.000Z",
+      "vendor": "Client ABC",
+      "notes": "Freelance project payment",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440002", "770e8400-e29b-41d4-a716-446655440004"],
+      "createdAt": "2024-01-12T10:00:00.000Z",
+      "updatedAt": "2024-01-12T10:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440013",
+      "accountId": "550e8400-e29b-41d4-a716-446655440003",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440014",
+      "amount": 450.00,
+      "type": "expense",
+      "date": "2024-01-13T00:00:00.000Z",
+      "vendor": "Air Canada",
+      "notes": "Flight tickets",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-13T15:00:00.000Z",
+      "updatedAt": "2024-01-13T15:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440014",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440015",
+      "amount": 75.00,
+      "type": "expense",
+      "date": "2024-01-14T00:00:00.000Z",
+      "vendor": "Gift Shop",
+      "notes": "Birthday gift",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-14T12:00:00.000Z",
+      "updatedAt": "2024-01-14T12:00:00.000Z"
+    },
+    {
+      "id": "880e8400-e29b-41d4-a716-446655440015",
+      "accountId": "550e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440006",
+      "amount": 125.80,
+      "type": "expense",
+      "date": "2024-01-15T00:00:00.000Z",
+      "vendor": "Restaurant XYZ",
+      "notes": "Dinner with friends",
+      "tagIds": ["770e8400-e29b-41d4-a716-446655440003"],
+      "createdAt": "2024-01-15T19:30:00.000Z",
+      "updatedAt": "2024-01-15T19:30:00.000Z"
+    }
+  ],
+  "budgets": [
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440001",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440006",
+      "amount": 400.00,
+      "period": "monthly",
+      "startDate": "2024-01-01T00:00:00.000Z",
+      "endDate": null,
+      "createdAt": "2023-12-28T10:00:00.000Z",
+      "updatedAt": "2023-12-28T10:00:00.000Z"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440002",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440007",
+      "amount": 200.00,
+      "period": "monthly",
+      "startDate": "2024-01-01T00:00:00.000Z",
+      "endDate": null,
+      "createdAt": "2023-12-28T10:00:00.000Z",
+      "updatedAt": "2023-12-28T10:00:00.000Z"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440003",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440009",
+      "amount": 150.00,
+      "period": "monthly",
+      "startDate": "2024-01-01T00:00:00.000Z",
+      "endDate": null,
+      "createdAt": "2023-12-28T10:00:00.000Z",
+      "updatedAt": "2023-12-28T10:00:00.000Z"
+    },
+    {
+      "id": "990e8400-e29b-41d4-a716-446655440004",
+      "categoryId": "660e8400-e29b-41d4-a716-446655440010",
+      "amount": 300.00,
+      "period": "monthly",
+      "startDate": "2024-01-01T00:00:00.000Z",
+      "endDate": null,
+      "createdAt": "2023-12-28T10:00:00.000Z",
+      "updatedAt": "2023-12-28T10:00:00.000Z"
+    }
+  ]
+}
