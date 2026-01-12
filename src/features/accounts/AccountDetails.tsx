@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useState, useCallback } from 'react';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useAppDispatch, useAccounts, useTransactions, useCategories } from '@/store/hooks';
 import { updateAccount, deleteAccount, markAccountAsReviewed } from '@/store/slices/accountsSlice';
 import { createTransaction, deleteTransaction } from '@/store/slices/transactionsSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +10,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Edit2, Trash2, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ArrowUp, ArrowDown, TrendingDown, CheckCircle, AlertTriangle, Calculator } from 'lucide-react';
+import { ArrowLeft, Edit2, Trash2, Plus, Wallet, CreditCard, PiggyBank, TrendingUp, ArrowUp, TrendingDown, CheckCircle, AlertTriangle, Calculator } from 'lucide-react';
 import { ACCOUNT_TYPES } from '@/types/constants';
-import { TransactionFormData, AccountType } from '@/types';
-import { parseLocalDate, formatDisplayDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed, groupTransactionsByDate, sortDateKeysDesc } from '@/lib/utils';
+import { TransactionFormData, AccountType, Account } from '@/types';
+import { parseLocalDate, formatDisplayDate, getTodayDateString, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
 import DebtRepaymentCalculator from './DebtRepaymentCalculator';
-import { TransactionDayHeader } from '@/components/transactions/TransactionDayHeader';
+import { TransactionTable } from '@/components/transactions/TransactionTable';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
+import { BANKS, getBankById } from '@/types/banks';
 
 const accountIcons: Record<string, JSX.Element> = {
   checking: <Wallet className="h-5 w-5" />,
@@ -25,13 +27,35 @@ const accountIcons: Record<string, JSX.Element> = {
   investment: <TrendingUp className="h-5 w-5" />,
 };
 
+// Helper component to render account icon with bank fallback
+function AccountIcon({ account, size = 'h-4.5 w-4.5' }: { account: Account; size?: string }) {
+  const [imageError, setImageError] = useState(false);
+  const bank = account.bankId ? getBankById(account.bankId) : null;
+  
+  if (bank && !imageError) {
+    return (
+      <img 
+        src={bank.icon} 
+        alt={bank.name} 
+        className="w-full h-full object-contain p-1"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+  
+  return <>{accountIcons[account.type] || <Wallet className={size} />}</>;
+}
+
 export default function AccountDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
-  const account = useAppSelector((state) => state.accounts.accounts.find((a) => a.id === id));
-  const transactions = useAppSelector((state) => state.transactions.transactions.filter((t) => t.accountId === id));
-  const categories = useAppSelector((state) => state.categories.categories);
+  const accounts = useAccounts();
+  const allTransactions = useTransactions();
+  const categories = useCategories();
+  const account = accounts.find((a) => a.id === id);
+  const transactions = allTransactions.filter((t) => t.accountId === id);
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
@@ -45,6 +69,7 @@ export default function AccountDetails() {
         currency: account.currency,
         color: account.color || '#3b82f6',
         icon: account.icon || '💳',
+        bankId: account.bankId || '',
         creditCardDetails: {
           interestRate: account.creditCardDetails?.interestRate?.toString() || '',
           statementDay: account.creditCardDetails?.statementDay?.toString() || '',
@@ -63,6 +88,7 @@ export default function AccountDetails() {
     currency: string;
     color: string;
     icon: string;
+    bankId: string;
     creditCardDetails: {
       interestRate: string;
       statementDay: string;
@@ -75,6 +101,7 @@ export default function AccountDetails() {
     currency: 'USD',
     color: '#3b82f6',
     icon: '💳',
+    bankId: '',
     creditCardDetails: {
       interestRate: '',
       statementDay: '',
@@ -90,6 +117,59 @@ export default function AccountDetails() {
     vendor: '',
     notes: '',
     tagIds: [] as string[],
+  });
+
+  // Register keyboard shortcuts for account details page
+  // Use a pattern that matches account details pages (/accounts/:id) but not the accounts list
+  // Must be called before early return to maintain hook order
+  const accountDetailsPagePattern = account && location.pathname.startsWith('/accounts/') && location.pathname !== '/accounts' 
+    ? '/accounts/' 
+    : undefined;
+  
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add transaction',
+    category: 'actions',
+    page: accountDetailsPagePattern,
+    action: () => {
+      if (account) {
+        setTransactionFormData({
+          accountId: id || '',
+          categoryId: '',
+          amount: '',
+          type: 'expense',
+          date: getTodayDateString(),
+          vendor: '',
+          notes: '',
+          tagIds: [],
+        });
+        setIsAddTransactionOpen(true);
+      }
+    },
+  });
+
+  useRegisterShortcut({
+    key: 'e',
+    description: 'Edit account',
+    category: 'actions',
+    page: accountDetailsPagePattern,
+    action: () => {
+      if (account) {
+        handleEditOpenChange(true);
+      }
+    },
+  });
+
+  useRegisterShortcut({
+    key: 'r',
+    description: 'Mark as reviewed',
+    category: 'actions',
+    page: accountDetailsPagePattern,
+    action: () => {
+      if (account) {
+        dispatch(markAccountAsReviewed(account.id));
+      }
+    },
   });
 
   if (!account) {
@@ -121,6 +201,7 @@ export default function AccountDetails() {
       data: {
         ...editFormData,
         balance: parseFloat(editFormData.balance) || 0,
+        bankId: editFormData.bankId || undefined,
         creditCardDetails,
       }
     }));
@@ -173,7 +254,9 @@ export default function AccountDetails() {
   };
 
   const handleMarkAsReviewed = () => {
-    dispatch(markAccountAsReviewed(account.id));
+    if (account) {
+      dispatch(markAccountAsReviewed(account.id));
+    }
   };
 
   const totalIncome = transactions.filter((t) => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
@@ -199,8 +282,8 @@ export default function AccountDetails() {
         <CardHeader className="pb-2">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 bg-primary/10 flex items-center justify-center">
-                {accountIcons[account.type] || <Wallet className="h-4.5 w-4.5" />}
+              <div className="w-9 h-9 bg-primary/10 flex items-center justify-center overflow-hidden rounded-md">
+                <AccountIcon account={account} size="h-4.5 w-4.5" />
               </div>
               <div>
                 <CardTitle className="text-base flex items-center gap-2">
@@ -226,10 +309,15 @@ export default function AccountDetails() {
                 size="sm"
                 variant="outline"
                 onClick={handleMarkAsReviewed}
-                className="text-success hover:text-success hover:bg-success/10"
+                className="text-success hover:text-success hover:bg-success/10 justify-between"
               >
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Reviewed
+                <div className="flex items-center">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Reviewed
+                </div>
+                <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                  R
+                </kbd>
               </Button>
               {isCreditCard && (
                 <Dialog open={isCalculatorOpen} onOpenChange={setIsCalculatorOpen}>
@@ -246,9 +334,14 @@ export default function AccountDetails() {
               )}
               <Dialog open={isEditOpen} onOpenChange={handleEditOpenChange}>
                 <DialogTrigger asChild>
-                  <Button size="sm" variant="outline">
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Edit
+                  <Button size="sm" variant="outline" className="justify-between">
+                    <div className="flex items-center">
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Edit
+                    </div>
+                    <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                      E
+                    </kbd>
                   </Button>
                 </DialogTrigger>
                 <DialogContent>
@@ -278,6 +371,25 @@ export default function AccountDetails() {
                           {ACCOUNT_TYPES.map((type) => (
                             <SelectItem key={type.value} value={type.value}>
                               {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-bank">Bank (Optional)</Label>
+                      <Select
+                        value={editFormData.bankId || 'none'}
+                        onValueChange={(value: string) => setEditFormData({ ...editFormData, bankId: value === 'none' ? '' : value })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a bank" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {BANKS.map((bank) => (
+                            <SelectItem key={bank.id} value={bank.id}>
+                              {bank.name}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -482,9 +594,14 @@ export default function AccountDetails() {
             </CardTitle>
             <Dialog open={isAddTransactionOpen} onOpenChange={setIsAddTransactionOpen}>
               <DialogTrigger asChild>
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Transaction
+                <Button size="sm" className="justify-between">
+                  <div className="flex items-center">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Transaction
+                  </div>
+                  <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                    C
+                  </kbd>
                 </Button>
               </DialogTrigger>
               <DialogContent>
@@ -585,95 +702,34 @@ export default function AccountDetails() {
           </div>
         </CardHeader>
         <CardContent>
-          {transactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="p-3 bg-muted mb-3">
-                <ArrowUp className="h-6 w-6 text-muted-foreground" />
+          <TransactionTable
+            transactions={transactions}
+            categories={categories}
+            columns={[
+              { key: 'icon', label: '', className: 'col-icon' },
+              { key: 'vendor', label: 'Vendor', className: 'col-vendor' },
+              { key: 'category', label: 'Category', className: 'col-category', hideOnMobile: true },
+              { key: 'date', label: 'Date', className: 'col-date' },
+              { key: 'type', label: 'Type', className: 'col-type', hideOnMobile: true },
+              { key: 'amount', label: 'Amount', className: 'col-amount' },
+              { key: 'actions', label: '', className: 'w-12 flex-shrink-0' },
+            ]}
+            actions={[
+              { type: 'delete', onClick: (t) => handleTransactionDelete(t.id) },
+            ]}
+            groupByDate={true}
+            layout="excel"
+            onAddTransactionForDate={handleAddTransactionForDate}
+            emptyMessage={
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <div className="p-3 bg-muted mb-3">
+                  <ArrowUp className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">No transactions yet.</p>
+                <p className="text-xs text-muted-foreground mt-1">Add your first transaction to get started.</p>
               </div>
-              <p className="text-sm text-muted-foreground">No transactions yet.</p>
-              <p className="text-xs text-muted-foreground mt-1">Add your first transaction to get started.</p>
-            </div>
-          ) : (
-            <div className="excel-table">
-              {/* Table Header */}
-              <div className="excel-table-header">
-                <div className="excel-table-header-cell col-icon"></div>
-                <div className="excel-table-header-cell col-vendor">Vendor</div>
-                <div className="excel-table-header-cell col-category hide-on-mobile">Category</div>
-                <div className="excel-table-header-cell col-date">Date</div>
-                <div className="excel-table-header-cell col-type hide-on-mobile">Type</div>
-                <div className="excel-table-header-cell col-amount">Amount</div>
-                <div className="excel-table-header-cell w-12 flex-shrink-0"></div>
-              </div>
-              {/* Table Body with Day Grouping */}
-              <div className="excel-table-body">
-                {(() => {
-                  const grouped = groupTransactionsByDate(transactions);
-                  const sortedDates = sortDateKeysDesc(Array.from(grouped.keys()));
-                  
-                  return sortedDates.map((dateKey) => {
-                    const dayTransactions = grouped.get(dateKey)!;
-                    const date = parseLocalDate(dateKey);
-                    
-                    return (
-                      <div key={dateKey}>
-                        {/* Sticky Day Header */}
-                        <TransactionDayHeader
-                          date={date}
-                          transactionCount={dayTransactions.length}
-                          onAddClick={() => handleAddTransactionForDate(dateKey)}
-                        />
-                        
-                        {/* Transactions for this day */}
-                        {dayTransactions.map((transaction) => {
-                          const category = categories.find((c) => c.id === transaction.categoryId);
-                          return (
-                            <div key={transaction.id} className="excel-table-row group">
-                              <div className="excel-table-cell col-icon">
-                                <div className={`icon-cell ${transaction.type === 'income' ? 'icon-income' : 'icon-expense'}`}>
-                                  {category?.icon || '💰'}
-                                </div>
-                              </div>
-                              <div className="excel-table-cell col-vendor">
-                                <span className="font-semibold">{transaction.vendor}</span>
-                              </div>
-                              <div className="excel-table-cell col-category hide-on-mobile">
-                                <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
-                              </div>
-                              <div className="excel-table-cell col-date">
-                                <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>
-                              </div>
-                              <div className="excel-table-cell col-type hide-on-mobile">
-                                <div className={`flex items-center gap-2 text-xs font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                                  {transaction.type === 'income' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                                  {transaction.type}
-                                </div>
-                              </div>
-                              <div className="excel-table-cell col-amount">
-                                <span className={`amount font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                                </span>
-                              </div>
-                              <div className="excel-table-cell w-12 flex-shrink-0">
-                                <Button
-                                  size="icon"
-                                  variant="ghost"
-                                  onClick={() => handleTransactionDelete(transaction.id)}
-                                  className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-          )}
+            }
+          />
         </CardContent>
       </Card>
     </div>

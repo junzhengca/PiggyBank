@@ -1,10 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Transaction, TransactionFormData, TransactionFilters } from '@/types';
 import transactionsService from '@/db/services/transactionsService';
+import { serializeDates, deserializeDates } from '@/lib/utils';
+import type { RootState } from '../index';
 
 interface TransactionsState {
-  transactions: Transaction[];
-  filteredTransactions: Transaction[];
+  transactions: any[]; // Serialized transactions with date strings
+  filteredTransactions: any[]; // Serialized transactions with date strings
   filters: TransactionFilters;
   loading: boolean;
   error: string | null;
@@ -21,28 +23,33 @@ const initialState: TransactionsState = {
 export const fetchTransactions = createAsyncThunk(
   'transactions/fetchAll',
   async () => {
-    return await transactionsService.getAll();
+    const transactions = await transactionsService.getAll();
+    return serializeDates(transactions);
   }
 );
 
 export const fetchFilteredTransactions = createAsyncThunk(
   'transactions/fetchFiltered',
   async (filters: TransactionFilters) => {
-    return await transactionsService.getFiltered(filters);
+    // Service needs Date objects, so pass filters as-is
+    const transactions = await transactionsService.getFiltered(filters);
+    return serializeDates(transactions);
   }
 );
 
 export const createTransaction = createAsyncThunk(
   'transactions/create',
   async (data: TransactionFormData) => {
-    return await transactionsService.create(data);
+    const transaction = await transactionsService.create(data);
+    return serializeDates(transaction);
   }
 );
 
 export const updateTransaction = createAsyncThunk(
   'transactions/update',
   async ({ id, data }: { id: string; data: Partial<TransactionFormData> }) => {
-    return await transactionsService.update(id, data);
+    const transaction = await transactionsService.update(id, data);
+    return transaction ? serializeDates(transaction) : undefined;
   }
 );
 
@@ -59,7 +66,7 @@ const transactionsSlice = createSlice({
   initialState,
   reducers: {
     setFilters: (state, action) => {
-      state.filters = action.payload;
+      state.filters = serializeDates(action.payload);
     },
     clearFilters: (state) => {
       state.filters = {};
@@ -120,5 +127,14 @@ const transactionsSlice = createSlice({
 });
 
 export const { setFilters, clearFilters } = transactionsSlice.actions;
+
+// Selectors with date deserialization
+export const selectTransactions = (state: RootState): Transaction[] => {
+  return deserializeDates(state.transactions.transactions);
+};
+
+export const selectFilteredTransactions = (state: RootState): Transaction[] => {
+  return deserializeDates(state.transactions.filteredTransactions);
+};
 
 export default transactionsSlice.reducer;

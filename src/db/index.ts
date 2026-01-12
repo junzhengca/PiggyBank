@@ -36,6 +36,14 @@ export class PiggyBankDB extends Dexie {
         }))
       );
     });
+    
+    this.version(3).stores({
+      accounts: 'id, name, type, balance, currency, bankId, lastReviewedAt, createdAt, updatedAt',
+      categories: 'id, name, type, color, isDefault, createdAt, updatedAt',
+      tags: 'id, name, color, createdAt, updatedAt',
+      transactions: 'id, accountId, categoryId, amount, type, date, vendor, createdAt, updatedAt',
+      budgets: 'id, categoryId, amount, period, startDate, endDate, createdAt, updatedAt',
+    });
   }
 }
 

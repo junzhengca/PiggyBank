@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import React from 'react';
+import { useAppDispatch, useTransactions, useAccounts, useCategories, useTags } from '@/store/hooks';
 import { createTransaction, deleteTransaction, updateTransaction } from '@/store/slices/transactionsSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,17 +9,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Plus, Trash2, Filter, Search, ArrowUp, ArrowDown, TrendingUp, TrendingDown, Edit } from 'lucide-react';
+import { Plus, Trash2, Filter, Search, TrendingUp, TrendingDown, Edit } from 'lucide-react';
 import { Transaction, TransactionType } from '@/types';
-import { parseLocalDate, formatLocalDate, formatDisplayDate, getTodayDateString, groupTransactionsByDate, sortDateKeysDesc } from '@/lib/utils';
-import { TransactionDayHeader } from '@/components/transactions/TransactionDayHeader';
+import { parseLocalDate, formatLocalDate, getTodayDateString } from '@/lib/utils';
+import { TransactionTable } from '@/components/transactions/TransactionTable';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
 
 export default function Transactions() {
   const dispatch = useAppDispatch();
-  const transactions = useAppSelector((state) => state.transactions.transactions);
-  const accounts = useAppSelector((state) => state.accounts.accounts);
-  const categories = useAppSelector((state) => state.categories.categories);
-  const tags = useAppSelector((state) => state.tags.tags);
+  const transactions = useTransactions();
+  const accounts = useAccounts();
+  const categories = useCategories();
+  const tags = useTags();
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
@@ -130,11 +132,23 @@ export default function Transactions() {
     categories.find(c => c.id === t.categoryId)?.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Register keyboard shortcut for 'c' to add transaction
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add transaction',
+    category: 'actions',
+    page: '/transactions',
+    action: () => {
+      resetForm();
+      setIsOpen(true);
+    },
+  });
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold gradient-text">Transactions</h1>
+          <h1 className="text-2xl font-bold">Transactions</h1>
           <p className="text-sm text-muted-foreground mt-1">Track your income and expenses</p>
         </div>
         <div className="flex items-center gap-2">
@@ -154,9 +168,14 @@ export default function Transactions() {
             }
           }}>
             <DialogTrigger asChild>
-              <Button className="shadow-lg shadow-primary/25">
-                <Plus className="h-4 w-4 mr-2" />
-                Add Transaction
+              <Button className="shadow-lg shadow-primary/25 justify-between">
+                <div className="flex items-center">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Transaction
+                </div>
+                <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                  C
+                </kbd>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -298,119 +317,42 @@ export default function Transactions() {
             </CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          {filteredTransactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="p-3 bg-muted mb-3">
-                <Filter className="h-6 w-6 text-muted-foreground" />
+        <CardContent className="p-0">
+          <TransactionTable
+            transactions={filteredTransactions}
+            categories={categories}
+            tags={tags}
+            columns={[
+              { key: 'icon', label: '', className: 'w-12' },
+              { key: 'vendor', label: 'Vendor' },
+              { key: 'category', label: 'Category' },
+              { key: 'tags', label: 'Tags' },
+              { key: 'date', label: 'Date' },
+              { key: 'type', label: 'Type' },
+              { key: 'amount', label: 'Amount', className: 'text-right' },
+              { key: 'actions', label: '', className: 'w-20 text-right' },
+            ]}
+            actions={[
+              { type: 'edit', onClick: handleEdit },
+              { type: 'delete', onClick: (t) => handleDelete(t.id) },
+            ]}
+            groupByDate={true}
+            layout="table"
+            onAddTransactionForDate={handleAddTransactionForDate}
+            emptyMessage={
+              <div className="flex flex-col items-center justify-center py-8 text-center px-6">
+                <div className="p-3 bg-muted rounded-md mb-3">
+                  <Filter className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {searchQuery ? 'No transactions found matching your search.' : 'No transactions yet.'}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {searchQuery ? 'Try a different search term.' : 'Add your first transaction to get started.'}
+                </p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                {searchQuery ? 'No transactions found matching your search.' : 'No transactions yet.'}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {searchQuery ? 'Try a different search term.' : 'Add your first transaction to get started.'}
-              </p>
-            </div>
-          ) : (
-            <div className="excel-table">
-              {/* Table Header */}
-              <div className="excel-table-header">
-                <div className="excel-table-header-cell col-icon"></div>
-                <div className="excel-table-header-cell col-vendor">Vendor</div>
-                <div className="excel-table-header-cell col-category">Category</div>
-                <div className="excel-table-header-cell col-tags">Tags</div>
-                <div className="excel-table-header-cell col-date">Date</div>
-                <div className="excel-table-header-cell col-type">Type</div>
-                <div className="excel-table-header-cell col-amount">Amount</div>
-                <div className="excel-table-header-cell w-20 flex-shrink-0"></div>
-              </div>
-              {/* Table Body with Day Grouping */}
-              <div className="excel-table-body">
-                {(() => {
-                  const grouped = groupTransactionsByDate(filteredTransactions);
-                  const sortedDates = sortDateKeysDesc(Array.from(grouped.keys()));
-                  
-                  return sortedDates.map((dateKey) => {
-                    const dayTransactions = grouped.get(dateKey)!;
-                    const date = parseLocalDate(dateKey);
-                    
-                    return (
-                      <div key={dateKey}>
-                        {/* Sticky Day Header */}
-                        <TransactionDayHeader
-                          date={date}
-                          transactionCount={dayTransactions.length}
-                          onAddClick={() => handleAddTransactionForDate(dateKey)}
-                        />
-                        
-                        {/* Transactions for this day */}
-                        {dayTransactions.map((transaction) => {
-                          const category = categories.find((c) => c.id === transaction.categoryId);
-                          const transactionTags = tags.filter(tag => transaction.tagIds.includes(tag.id));
-                          return (
-                            <div key={transaction.id} className="excel-table-row group">
-                              <div className="excel-table-cell col-icon">
-                                <div className={`icon-cell ${transaction.type === 'income' ? 'icon-income' : 'icon-expense'}`}>
-                                  {category?.icon || '💰'}
-                                </div>
-                              </div>
-                              <div className="excel-table-cell col-vendor">
-                                <span className="font-semibold">{transaction.vendor}</span>
-                              </div>
-                              <div className="excel-table-cell col-category">
-                                <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
-                              </div>
-                              <div className="excel-table-cell col-tags">
-                                <div className="flex flex-wrap gap-1">
-                                  {transactionTags.length === 0 ? (
-                                    <span className="text-muted-foreground text-xs">-</span>
-                                  ) : (
-                                    transactionTags.map(tag => (
-                                      <span
-                                        key={tag.id}
-                                        className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium text-white"
-                                        style={{ backgroundColor: tag.color }}
-                                      >
-                                        {tag.name}
-                                      </span>
-                                    ))
-                                  )}
-                                </div>
-                              </div>
-                              <div className="excel-table-cell col-date">
-                                <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>
-                              </div>
-                              <div className="excel-table-cell col-type">
-                                <div className={`flex items-center gap-2 text-xs font-medium ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                                  {transaction.type === 'income' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                                  {transaction.type}
-                                </div>
-                              </div>
-                              <div className="excel-table-cell col-amount">
-                                <span className={`amount font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                                  {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                                </span>
-                              </div>
-                              <div className="excel-table-cell w-20 flex-shrink-0">
-                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Button size="icon" variant="ghost" onClick={() => handleEdit(transaction)} className="h-7 w-7">
-                                    <Edit className="h-3.5 w-3.5" />
-                                  </Button>
-                                  <Button size="icon" variant="ghost" onClick={() => handleDelete(transaction.id)} className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10">
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-          )}
+            }
+          />
         </CardContent>
       </Card>
     </div>

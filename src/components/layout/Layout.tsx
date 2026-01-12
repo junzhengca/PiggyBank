@@ -25,6 +25,7 @@ import AccountDetails from '@/features/accounts/AccountDetails';
 import Transactions from '@/features/transactions/Transactions';
 import Categories from '@/features/categories/Categories';
 import Budgets from '@/features/budgets/Budgets';
+import BudgetDetails from '@/features/budgets/BudgetDetails';
 import Analytics from '@/features/analytics/Analytics';
 import Settings from '@/features/settings/Settings';
 import Tags from '@/features/tags/Tags';
@@ -41,8 +42,8 @@ const navItems = [
   { path: '/categories', label: 'Categories', icon: PieChart, shortcut: '4' },
   { path: '/budgets', label: 'Budgets', icon: PieChart, shortcut: '5' },
   { path: '/analytics', label: 'Analytics', icon: PieChart, shortcut: '6' },
-  { path: '/tags', label: 'Tags', icon: Tag, shortcut: '8' },
-  { path: '/settings', label: 'Settings', icon: SettingsIcon, shortcut: '7' },
+  { path: '/tags', label: 'Tags', icon: Tag, shortcut: '7' },
+  { path: '/settings', label: 'Settings', icon: SettingsIcon, shortcut: '8' },
 ];
 
 function LayoutContent() {
@@ -80,25 +81,21 @@ function LayoutContent() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="min-h-screen bg-background">
       {/* Mobile Header */}
-      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-card border-b px-3 py-2">
+      <header className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-card border-b px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2">
             <span className="text-xl">🐷</span>
-            <span className="font-bold text-lg gradient-text">PiggyBank</span>
+            <span className="font-bold text-lg">PiggyBank</span>
           </Link>
           <div className="flex items-center gap-2">
             <Button
               size="icon"
               variant="ghost"
               onClick={() => setIsSearchOpen(true)}
-              className="relative"
             >
               <Search className="h-4 w-4" />
-              <kbd className="absolute -bottom-1 -right-1 text-[10px] px-1 py-0.5 bg-primary text-primary-foreground">
-                ⌘K
-              </kbd>
             </Button>
             <Button size="icon" variant="ghost">
               <Plus className="h-4 w-4" />
@@ -109,10 +106,10 @@ function LayoutContent() {
 
       <div className="flex">
         {/* Sidebar - Desktop */}
-        <aside className="hidden lg:flex flex-col w-56 min-h-screen bg-card border-r p-3 fixed">
-          <Link to="/" className="flex items-center space-x-2 mb-6 group">
-            <span className="text-2xl group-hover:scale-110 transition-transform">🐷</span>
-            <span className="font-bold text-xl gradient-text">PiggyBank</span>
+        <aside className="hidden lg:flex flex-col w-56 min-h-screen bg-card border-r p-4 fixed">
+          <Link to="/" className="flex items-center space-x-2 mb-6">
+            <span className="text-2xl">🐷</span>
+            <span className="font-bold text-xl">PiggyBank</span>
           </Link>
 
           <nav className="flex-1 space-y-1">
@@ -123,17 +120,17 @@ function LayoutContent() {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center justify-between px-3 py-2 transition-all duration-200 group ${
+                  className={`flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                     isActive
-                      ? 'bg-primary text-primary-foreground shadow-sm'
-                      : 'hover:bg-accent hover:text-accent-foreground hover:translate-x-1'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   }`}
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2">
                     <Icon className="h-4 w-4" />
-                    <span className="font-medium text-sm">{item.label}</span>
+                    <span>{item.label}</span>
                   </div>
-                  <kbd className="kbd text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                  <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
                     {item.shortcut}
                   </kbd>
                 </Link>
@@ -141,7 +138,7 @@ function LayoutContent() {
             })}
           </nav>
 
-          <div className="mt-auto space-y-2">
+          <div className="mt-auto space-y-1">
             <Button
               variant="outline"
               size="sm"
@@ -150,7 +147,9 @@ function LayoutContent() {
             >
               <Search className="h-4 w-4 mr-2" />
               Search
-              <kbd className="kbd ml-auto">⌘K</kbd>
+              <kbd className="ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                ⌘K
+              </kbd>
             </Button>
             <ThemeToggle />
             <Button
@@ -161,7 +160,9 @@ function LayoutContent() {
             >
               <Keyboard className="h-4 w-4 mr-2" />
               Keyboard Shortcuts
-              <kbd className="kbd ml-auto">⌘?</kbd>
+              <kbd className="ml-auto px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                ⌘?
+              </kbd>
             </Button>
           </div>
         </aside>
@@ -175,6 +176,7 @@ function LayoutContent() {
             <Route path="/transactions" element={<Transactions />} />
             <Route path="/categories" element={<Categories />} />
             <Route path="/budgets" element={<Budgets />} />
+            <Route path="/budgets/:id" element={<BudgetDetails />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/tags" element={<Tags />} />
             <Route path="/settings" element={<Settings />} />
@@ -183,7 +185,7 @@ function LayoutContent() {
       </div>
 
       {/* Bottom Navigation - Mobile */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t px-2 py-1.5 z-40">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-card border-t px-2 py-2 z-40">
         <div className="flex justify-around">
           {navItems.slice(0, 4).map((item) => {
             const Icon = item.icon;
@@ -192,14 +194,14 @@ function LayoutContent() {
               <Link
                 key={item.path}
                 to={item.path}
-                className={`flex flex-col items-center p-1.5 transition-all duration-200 ${
+                className={`flex flex-col items-center p-2 rounded-md transition-colors ${
                   isActive
-                    ? 'text-primary bg-primary/10'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'text-primary bg-accent'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-accent'
                 }`}
               >
                 <Icon className="h-4 w-4" />
-                <span className="text-xs mt-0.5">{item.label}</span>
+                <span className="text-xs mt-1">{item.label}</span>
               </Link>
             );
           })}

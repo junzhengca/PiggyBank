@@ -72,6 +72,11 @@ export const SHORTCUTS: Omit<Shortcut, 'action'>[] = [
   },
   {
     key: '7',
+    description: 'Go to Tags',
+    category: 'navigation',
+  },
+  {
+    key: '8',
     description: 'Go to Settings',
     category: 'navigation',
   },

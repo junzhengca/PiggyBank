@@ -4,7 +4,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { fuzzySearch, highlightMatches } from '@/lib/fuzzySearch';
 import { formatDisplayDate } from '@/lib/utils';
-import { useAppSelector } from '@/store/hooks';
+import { useAccounts, useTransactions, useCategories, useBudgets } from '@/store/hooks';
 import {
   Search,
   Wallet,
@@ -30,10 +30,10 @@ export function GlobalSearch({ isOpen, onClose }: { isOpen: boolean; onClose: ()
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [results, setResults] = useState<SearchItem[]>([]);
 
-  const accounts = useAppSelector((state) => state.accounts.accounts);
-  const transactions = useAppSelector((state) => state.transactions.transactions);
-  const categories = useAppSelector((state) => state.categories.categories);
-  const budgets = useAppSelector((state) => state.budgets.budgets);
+  const accounts = useAccounts();
+  const transactions = useTransactions();
+  const categories = useCategories();
+  const budgets = useBudgets();
 
   useEffect(() => {
     if (isOpen && inputRef.current) {
@@ -183,11 +183,11 @@ export function GlobalSearch({ isOpen, onClose }: { isOpen: boolean; onClose: ()
                   }}
                   className={`w-full flex items-center gap-4 px-4 py-3 border-b border-border transition-colors ${
                     index === selectedIndex
-                      ? 'bg-primary/10'
+                      ? 'bg-accent'
                       : 'hover:bg-accent'
                   }`}
                 >
-                  <div className={`p-2 bg-muted ${getTypeColor(result.type)}`}>
+                  <div className={`p-2 bg-muted rounded-md ${getTypeColor(result.type)}`}>
                     {result.icon}
                   </div>
                   <div className="flex-1 text-left">
@@ -226,16 +226,16 @@ export function GlobalSearch({ isOpen, onClose }: { isOpen: boolean; onClose: ()
         <div className="border-t px-4 py-3 bg-muted/50">
           <div className="flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
-              <kbd className="kbd text-xs">↑</kbd>
-              <kbd className="kbd text-xs">↓</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-background text-muted-foreground rounded border border-border">↑</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-background text-muted-foreground rounded border border-border">↓</kbd>
               <span>to navigate</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="kbd text-xs">Enter</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-background text-muted-foreground rounded border border-border">Enter</kbd>
               <span>to select</span>
             </div>
             <div className="flex items-center gap-1">
-              <kbd className="kbd text-xs">Esc</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs font-mono bg-background text-muted-foreground rounded border border-border">Esc</kbd>
               <span>to close</span>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppSelector } from '@/store/hooks';
+import { useTransactions, useCategories, useTags } from '@/store/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MultiSelect } from '@/components/ui/multi-select';
@@ -25,9 +25,9 @@ const COLORS = [
 ];
 
 export default function Analytics() {
-  const transactions = useAppSelector((state) => state.transactions.transactions);
-  const categories = useAppSelector((state) => state.categories.categories);
-  const tags = useAppSelector((state) => state.tags.tags);
+  const transactions = useTransactions();
+  const categories = useCategories();
+  const tags = useTags();
   const [period, setPeriod] = useState<AnalyticsPeriod>('monthly');
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 

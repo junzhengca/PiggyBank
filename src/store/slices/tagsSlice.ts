@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Tag, TagFormData } from '@/types';
 import { tagsService } from '@/db/services/tagsService';
+import { serializeDates, deserializeDates } from '@/lib/utils';
+import type { RootState } from '../index';
 
 interface TagsState {
-  tags: Tag[];
+  tags: any[]; // Serialized tags with date strings
   loading: boolean;
   error: string | null;
 }
@@ -17,21 +19,24 @@ const initialState: TagsState = {
 export const fetchTags = createAsyncThunk(
   'tags/fetchAll',
   async () => {
-    return await tagsService.getAll();
+    const tags = await tagsService.getAll();
+    return serializeDates(tags);
   }
 );
 
 export const createTag = createAsyncThunk(
   'tags/create',
   async (data: TagFormData) => {
-    return await tagsService.create(data);
+    const tag = await tagsService.create(data);
+    return serializeDates(tag);
   }
 );
 
 export const updateTag = createAsyncThunk(
   'tags/update',
   async ({ id, data }: { id: string; data: Partial<TagFormData> }) => {
-    return await tagsService.update(id, data);
+    const tag = await tagsService.update(id, data);
+    return tag ? serializeDates(tag) : undefined;
   }
 );
 
@@ -89,5 +94,10 @@ const tagsSlice = createSlice({
       });
   },
 });
+
+// Selectors with date deserialization
+export const selectTags = (state: RootState): Tag[] => {
+  return deserializeDates(state.tags.tags);
+};
 
 export default tagsSlice.reducer;

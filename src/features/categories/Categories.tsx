@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useCategories } from '@/store/hooks';
 import { createCategory, deleteCategory } from '@/store/slices/categoriesSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +9,11 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, PieChart } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
 
 export default function Categories() {
   const dispatch = useAppDispatch();
-  const categories = useAppSelector((state) => state.categories.categories);
+  const categories = useCategories();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -46,18 +47,34 @@ export default function Categories() {
   const incomeCategories = categories.filter((c) => c.type === 'income');
   const expenseCategories = categories.filter((c) => c.type === 'expense');
 
+  // Register keyboard shortcut for 'c' to add category
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add category',
+    category: 'actions',
+    page: '/categories',
+    action: () => {
+      setIsOpen(true);
+    },
+  });
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold gradient-text">Categories</h1>
+          <h1 className="text-2xl font-bold">Categories</h1>
           <p className="text-sm text-muted-foreground mt-1">Organize your transactions</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="shadow-lg shadow-primary/25">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Category
+            <Button className="shadow-lg shadow-primary/25 justify-between">
+              <div className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Category
+              </div>
+              <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                C
+              </kbd>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -146,12 +163,11 @@ export default function Categories() {
                   {expenseCategories.map((category, index) => (
                     <div
                       key={category.id}
-                      className="flex items-center justify-between p-3 border-b border-border hover:bg-muted/50 transition-all duration-300 group"
-                      style={{ animationDelay: `${index * 30}ms` }}
+                      className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"
                     >
                       <div className="flex items-center space-x-2">
                         <div
-                          className="w-10 h-10 flex items-center justify-center text-lg group-hover:scale-110 transition-transform"
+                          className="w-10 h-10 flex items-center justify-center text-lg"
                           style={{ backgroundColor: category.color + '20' }}
                         >
                           {category.icon}
@@ -201,12 +217,11 @@ export default function Categories() {
                   {incomeCategories.map((category, index) => (
                     <div
                       key={category.id}
-                      className="flex items-center justify-between p-3 border-b border-border hover:bg-muted/50 transition-all duration-300 group"
-                      style={{ animationDelay: `${index * 30}ms` }}
+                      className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"
                     >
                       <div className="flex items-center space-x-2">
                         <div
-                          className="w-10 h-10 flex items-center justify-center text-lg group-hover:scale-110 transition-transform"
+                          className="w-10 h-10 flex items-center justify-center text-lg"
                           style={{ backgroundColor: category.color + '20' }}
                         >
                           {category.icon}

@@ -1,22 +1,31 @@
-import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { createBudget, deleteBudget } from '@/store/slices/budgetsSlice';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, useBudgets, useCategories, useTransactions } from '@/store/hooks';
+import { createBudget, deleteBudget, updateBudget } from '@/store/slices/budgetsSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Trash2, Target, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Plus, Trash2, Target, AlertTriangle, TrendingUp, Edit } from 'lucide-react';
 import { BUDGET_PERIODS } from '@/types/constants';
-import { parseLocalDate, getTodayDateString } from '@/lib/utils';
+import { parseLocalDate, getTodayDateString, formatLocalDate, formatDisplayDate, calculateBudgetEndDate, isDateOnOrAfter, isDateOnOrBefore } from '@/lib/utils';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
+import { Budget } from '@/types';
 
 export default function Budgets() {
   const dispatch = useAppDispatch();
-  const budgets = useAppSelector((state) => state.budgets.budgets);
-  const categories = useAppSelector((state) => state.categories.categories);
-  const transactions = useAppSelector((state) => state.transactions.transactions);
+  const navigate = useNavigate();
+  const budgets = useBudgets();
+  const categories = useCategories();
+  const transactions = useTransactions();
+  
+  // Force recalculation when budgets change by using budgets.length and budgets as dependencies
+  // This ensures the component detects when budgets array updates
   const [isOpen, setIsOpen] = useState(false);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
+  const isEditing = editingBudget !== null;
   const [formData, setFormData] = useState({
     categoryId: '',
     amount: '',
@@ -26,12 +35,45 @@ export default function Budgets() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(createBudget({
-      ...formData,
-      amount: parseFloat(formData.amount) || 0,
-      startDate: parseLocalDate(formData.startDate),
-    }));
+    if (isEditing && editingBudget) {
+      dispatch(updateBudget({
+        id: editingBudget.id,
+        data: {
+          ...formData,
+          amount: parseFloat(formData.amount) || 0,
+          startDate: parseLocalDate(formData.startDate),
+        },
+      }));
+    } else {
+      dispatch(createBudget({
+        ...formData,
+        amount: parseFloat(formData.amount) || 0,
+        startDate: parseLocalDate(formData.startDate),
+      }));
+    }
     setIsOpen(false);
+    setEditingBudget(null);
+    setFormData({
+      categoryId: '',
+      amount: '',
+      period: 'monthly',
+      startDate: getTodayDateString(),
+    });
+  };
+
+  const handleEdit = (budget: Budget) => {
+    setEditingBudget(budget);
+    setFormData({
+      categoryId: budget.categoryId,
+      amount: budget.amount.toString(),
+      period: budget.period,
+      startDate: formatLocalDate(budget.startDate),
+    });
+    setIsOpen(true);
+  };
+
+  const resetForm = () => {
+    setEditingBudget(null);
     setFormData({
       categoryId: '',
       amount: '',
@@ -48,54 +90,100 @@ export default function Budgets() {
 
   const expenseCategories = categories.filter((c) => c.type === 'expense');
 
-  const budgetsWithProgress = budgets.map((budget) => {
-    const category = categories.find((c) => c.id === budget.categoryId);
-    const spent = transactions
-      .filter((t) => {
-        const transactionDate = new Date(t.date);
-        const budgetStart = new Date(budget.startDate);
-        const budgetEnd = budget.endDate ? new Date(budget.endDate) : new Date();
-        return (
-          t.categoryId === budget.categoryId &&
-          t.type === 'expense' &&
-          transactionDate >= budgetStart &&
-          transactionDate <= budgetEnd
-        );
-      })
-      .reduce((sum, t) => sum + t.amount, 0);
-    
-    const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
-    const isOverBudget = percentage > 100;
-
-    return {
-      ...budget,
-      categoryName: category?.name || 'Unknown',
-      categoryIcon: category?.icon || '📦',
-      categoryColor: category?.color || '#64748b',
-      spent,
-      remaining: budget.amount - spent,
-      percentage,
-      isOverBudget,
-    };
+  // Register keyboard shortcut for 'c' to add budget
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add budget',
+    category: 'actions',
+    page: '/budgets',
+    action: () => {
+      setIsOpen(true);
+    },
   });
+
+  const budgetsWithProgress = useMemo(() => {
+    return budgets.map((budget) => {
+      const category = categories.find((c) => c.id === budget.categoryId);
+      
+      // Calculate the effective end date for the budget period
+      const budgetStart = new Date(budget.startDate);
+      const calculatedEndDate = calculateBudgetEndDate(budgetStart, budget.period);
+      const budgetEnd = budget.endDate ? new Date(budget.endDate) : calculatedEndDate;
+      
+      // Get today's date in UTC (using local date components, then converting to UTC)
+      // This matches how parseLocalDate works - it takes local date and converts to UTC
+      const now = new Date();
+      const todayUTC = new Date(Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      ));
+      
+      // Use the earlier of budgetEnd or today (can't count future transactions)
+      const effectiveEndDate = isDateOnOrBefore(budgetEnd, todayUTC) ? budgetEnd : todayUTC;
+      
+      const spent = transactions
+        .filter((t) => {
+          const transactionDate = new Date(t.date);
+          // Compare dates ignoring time components
+          return (
+            t.categoryId === budget.categoryId &&
+            t.type === 'expense' &&
+            isDateOnOrAfter(transactionDate, budgetStart) &&
+            isDateOnOrBefore(transactionDate, effectiveEndDate)
+          );
+        })
+        .reduce((sum, t) => sum + t.amount, 0);
+      
+      const percentage = budget.amount > 0 ? (spent / budget.amount) * 100 : 0;
+      const isOverBudget = percentage > 100;
+
+      return {
+        ...budget,
+        categoryName: category?.name || 'Unknown',
+        categoryIcon: category?.icon || '📦',
+        categoryColor: category?.color || '#64748b',
+        spent,
+        remaining: budget.amount - spent,
+        percentage,
+        isOverBudget,
+        budgetStartDate: budgetStart,
+        budgetEndDate: budgetEnd,
+        effectiveEndDate,
+      };
+    });
+  }, [budgets, categories, transactions]);
 
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold gradient-text">Budgets</h1>
+          <h1 className="text-2xl font-bold">Budgets</h1>
           <p className="text-sm text-muted-foreground mt-1">Set spending limits for your categories</p>
         </div>
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <Dialog open={isOpen} onOpenChange={(open) => {
+          setIsOpen(open);
+          if (!open) {
+            resetForm();
+          } else if (!isEditing) {
+            // Reset form when opening for a new budget
+            resetForm();
+          }
+        }}>
           <DialogTrigger asChild>
-            <Button className="shadow-lg shadow-primary/25">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Budget
+            <Button className="shadow-lg shadow-primary/25 justify-between">
+              <div className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Budget
+              </div>
+              <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                C
+              </kbd>
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>Add New Budget</DialogTitle>
+              <DialogTitle>{isEditing ? 'Edit Budget' : 'Add New Budget'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-3">
               <div>
@@ -158,7 +246,7 @@ export default function Budgets() {
                 />
               </div>
               <Button type="submit" className="w-full shadow-lg">
-                Create Budget
+                {isEditing ? 'Update Budget' : 'Create Budget'}
               </Button>
             </form>
           </DialogContent>
@@ -178,7 +266,11 @@ export default function Budgets() {
           </Card>
         ) : (
           budgetsWithProgress.map((budget) => (
-            <Card key={budget.id}>
+            <Card 
+              key={budget.id} 
+              className="group cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => navigate(`/budgets/${budget.id}`)}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="flex items-center gap-3">
@@ -190,14 +282,30 @@ export default function Budgets() {
                     </div>
                     <span className="text-lg">{budget.categoryName}</span>
                   </CardTitle>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    onClick={() => handleDelete(budget.id)}
-                    className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(budget);
+                      }}
+                      className="h-7 w-7"
+                    >
+                      <Edit className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(budget.id);
+                      }}
+                      className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -208,10 +316,10 @@ export default function Budgets() {
                       {budget.percentage.toFixed(0)}%
                     </span>
                   </div>
-                  <div className="h-4 bg-muted overflow-hidden">
+                  <div className="h-4 bg-muted overflow-hidden rounded-full">
                     <div
-                      className={`h-full progress-animated ${
-                        budget.isOverBudget ? 'bg-gradient-to-r from-destructive to-red-600' : 'bg-gradient-to-r from-primary to-primary-light'
+                      className={`h-full progress-animated rounded-full ${
+                        budget.isOverBudget ? 'bg-destructive' : 'bg-primary'
                       }`}
                       style={{ width: `${Math.min(budget.percentage, 100)}%` }}
                     />
@@ -234,6 +342,18 @@ export default function Budgets() {
                     <span className={`font-bold text-xl amount ${budget.remaining >= 0 ? 'text-success' : 'text-destructive'}`}>
                       ${budget.remaining.toFixed(2)}
                     </span>
+                  </div>
+                  <div className="flex justify-between items-center border-t pt-3">
+                    <span className="text-sm text-muted-foreground">Period</span>
+                    <span className="text-sm font-medium capitalize">{budget.period}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Start Date</span>
+                    <span className="text-sm font-medium">{formatDisplayDate(budget.budgetStartDate)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">End Date</span>
+                    <span className="text-sm font-medium">{formatDisplayDate(budget.budgetEndDate)}</span>
                   </div>
                 </div>
 

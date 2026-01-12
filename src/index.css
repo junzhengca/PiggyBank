@@ -10,64 +10,42 @@
     --card-foreground: 222.2 84% 4.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262 83% 58%;
+    --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
-    --primary-light: 262 83% 65%;
-    --primary-dark: 262 83% 45%;
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 262 83% 96%;
+    --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 50%;
-    --warning-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 262 83% 58%;
-    --radius: 0rem;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-    --card: 217.2 32.6% 17.5%;
+    --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-    --primary: 262 83% 65%;
+    --primary: 217.2 91.2% 59.8%;
     --primary-foreground: 222.2 47.4% 11.2%;
-    --primary-light: 262 83% 75%;
-    --primary-dark: 262 83% 55%;
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 262 83% 20%;
+    --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-    --destructive: 0 72% 50%;
+    --destructive: 0 84.2% 70%;
     --destructive-foreground: 210 40% 98%;
-    --success: 142 76% 45%;
-    --success-foreground: 210 40% 98%;
-    --warning: 38 92% 55%;
-    --warning-foreground: 210 40% 98%;
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 262 83% 65%;
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-    --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
-    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
-    --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+    --ring: 224.3 76.3% 48%;
   }
 }
 
@@ -76,248 +54,11 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
-    font-feature-settings: "cv11", "ss01";
-    font-variation-settings: "opsz" 32;
+    @apply bg-background text-foreground;
   }
 }
 
 @layer utilities {
-  /* Glassmorphism */
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .dark .glass {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .glass-strong {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-  }
-
-  .dark .glass-strong {
-    background: rgba(15, 23, 42, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-  }
-
-  /* Gradient text */
-  .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-light to-primary-dark;
-  }
-
-  .gradient-text-blue {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500;
-  }
-
-  /* Gradient backgrounds */
-  .gradient-bg {
-    @apply bg-gradient-to-br from-primary/10 via-primary-light/5 to-transparent;
-  }
-
-  .gradient-bg-blue {
-    @apply bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/5;
-  }
-
-  /* Card hover effects */
-  .card-hover {
-    @apply transition-all duration-300 ease-out;
-  }
-
-  .card-hover:hover {
-    @apply shadow-lg -translate-y-1;
-  }
-
-  /* Button press effect */
-  .button-press {
-    @apply transition-transform duration-100 active:scale-95;
-  }
-
-  /* Focus ring */
-  .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
-  }
-
-  /* Scrollbar */
-  .scrollbar-thin {
-    scrollbar-width: thin;
-    scrollbar-color: hsl(var(--muted-foreground)) hsl(var(--muted));
-  }
-
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: hsl(var(--muted-foreground) / 0.3);
-  }
-
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    background: hsl(var(--muted-foreground) / 0.5);
-  }
-
-  /* Animation utilities */
-  .animate-fade-in {
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  .animate-slide-up {
-    animation: slideUp 0.3s ease-out;
-  }
-
-  .animate-slide-down {
-    animation: slideDown 0.3s ease-out;
-  }
-
-  .animate-scale-in {
-    animation: scaleIn 0.2s ease-out;
-  }
-
-  .animate-pulse-slow {
-    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  }
-
-  /* Keyframe animations */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideUp {
-    from {
-      transform: translateY(10px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes slideDown {
-    from {
-      transform: translateY(-10px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  @keyframes scaleIn {
-    from {
-      transform: scale(0.95);
-      opacity: 0;
-    }
-    to {
-      transform: scale(1);
-      opacity: 1;
-    }
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -1000px 0;
-    }
-    100% {
-      background-position: 1000px 0;
-    }
-  }
-
-  /* Skeleton loading */
-  .skeleton {
-    @apply bg-muted animate-pulse;
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 0%,
-      hsl(var(--muted-foreground) / 0.1) 50%,
-      hsl(var(--muted)) 100%
-    );
-    background-size: 1000px 100%;
-    animation: shimmer 2s infinite linear;
-  }
-
-  /* Progress bar animation */
-  .progress-animated {
-    @apply transition-all duration-500 ease-out;
-  }
-
-  /* Keyboard shortcut badge */
-  .kbd {
-    @apply inline-flex items-center justify-center px-2 py-1 text-xs font-medium text-muted-foreground bg-muted border border-border shadow-sm;
-  }
-
-  /* Search highlight */
-  .search-highlight {
-    @apply bg-yellow-200 dark:bg-yellow-800 text-foreground rounded px-0.5;
-  }
-
-  /* Compact spacing utilities */
-  .compact-p-2 { padding: 0.5rem; }
-  .compact-p-3 { padding: 0.75rem; }
-  .compact-p-4 { padding: 1rem; }
-  .compact-py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
-  .compact-py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
-  .compact-px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-  .compact-px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-  .compact-gap-2 { gap: 0.5rem; }
-  .compact-gap-3 { gap: 0.75rem; }
-  .compact-gap-4 { gap: 1rem; }
-  .compact-my-2 { margin-top: 0.5rem; margin-bottom: 0.5rem; }
-  .compact-my-3 { margin-top: 0.75rem; margin-bottom: 0.75rem; }
-  .compact-my-4 { margin-top: 1rem; margin-bottom: 1rem; }
-
-  /* Compact typography */
-  .compact-text-xs { font-size: 0.75rem; }
-  .compact-text-sm { font-size: 0.875rem; }
-  .compact-text-base { font-size: 1rem; }
-  .compact-text-lg { font-size: 1.125rem; }
-  .compact-text-xl { font-size: 1.25rem; }
-  .compact-text-2xl { font-size: 1.5rem; }
-
-  /* Compact icons */
-  .compact-icon-sm { width: 1rem; height: 1rem; }
-  .compact-icon-md { width: 1.25rem; height: 1.25rem; }
-  .compact-icon-lg { width: 1.5rem; height: 1.5rem; }
-
-  /* Excel-like cell styles */
-  .excel-cell {
-    @apply border border-border bg-background px-2 py-1 text-sm;
-  }
-
-  .excel-cell-header {
-    @apply border border-border bg-muted px-2 py-1 text-sm font-semibold;
-  }
-
-  .excel-row {
-    @apply flex items-center border-b border-border;
-  }
-
-  .excel-row:hover {
-    @apply bg-muted/50;
-  }
-
-  .dark .excel-row:hover {
-    @apply bg-white/10;
-  }
-
   /* Amount styling with monospace font */
   .amount {
     @apply font-mono font-medium tabular-nums;
@@ -335,53 +76,34 @@
     @apply font-mono text-xl font-bold tabular-nums;
   }
 
-  /* Sharp button styles */
-  .btn-sharp {
-    @apply border border-border bg-background hover:bg-accent;
-  }
-
-  /* Sharp input styles */
-  .input-sharp {
-    border-radius: 0;
-  }
-
-  /* Excel-like table styles */
+  /* Excel-like table container */
   .excel-table {
-    @apply w-full border border-border;
+    @apply w-full overflow-x-auto;
   }
 
-  .dark .excel-table {
-    @apply border-white/20;
-  }
-
+  /* Excel-like table header row */
   .excel-table-header {
-    @apply flex items-center bg-muted/80 border-b border-border font-semibold text-sm text-muted-foreground;
+    @apply flex items-center bg-muted/50 border-b border-border font-semibold text-sm text-muted-foreground;
+    min-width: max-content;
   }
 
-  .dark .excel-table-header {
-    @apply border-b-white/20;
-  }
-
+  /* Excel-like table header cell */
   .excel-table-header-cell {
     @apply px-3 py-2 text-sm font-medium;
   }
 
+  /* Excel-like table body */
   .excel-table-body {
     @apply divide-y divide-border;
   }
 
-  .dark .excel-table-body {
-    @apply divide-y divide-white/20;
-  }
-
+  /* Excel-like table row */
   .excel-table-row {
     @apply flex items-center hover:bg-muted/50 transition-colors duration-150;
+    min-width: max-content;
   }
 
-  .dark .excel-table-row:hover {
-    @apply hover:bg-white/10;
-  }
-
+  /* Excel-like table cell */
   .excel-table-cell {
     @apply px-3 py-2 text-sm;
   }
@@ -404,14 +126,9 @@
     @apply w-10 h-10 flex items-center justify-center;
   }
 
-  /* Colored icon backgrounds */
-  .icon-income { @apply bg-success/10; }
-  .icon-expense { @apply bg-destructive/10; }
-  .icon-account { @apply bg-primary/10; }
-
   /* Status badges */
   .status-income {
-    @apply inline-flex items-center gap-1 text-xs font-medium text-success;
+    @apply inline-flex items-center gap-1 text-xs font-medium text-green-600 dark:text-green-400;
   }
 
   .status-expense {
@@ -442,7 +159,7 @@
   }
 
   .dark .sticky-day-header {
-    @apply bg-card/95 border-white/20;
+    @apply bg-card/95;
   }
 
   /* Day header content container */
@@ -464,6 +181,91 @@
   .day-header-add-btn {
     @apply h-7 px-2 text-xs;
   }
+
+  /* Modal animations */
+  @keyframes modal-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes modal-content-in {
+    from {
+      transform: translate(-50%, -48%) scale(0.95);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-content-out {
+    from {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+    to {
+      transform: translate(-50%, -48%) scale(0.95);
+      opacity: 0;
+    }
+  }
+
+  .animate-modal-fade-in {
+    animation: modal-fade-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-modal-fade-out {
+    animation: modal-fade-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Modal content animations - ensure they override static transforms */
+  [data-state="open"].animate-modal-content-in {
+    animation: modal-content-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  [data-state="closed"].animate-modal-content-out {
+    animation: modal-content-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Fallback for when classes are applied */
+  .animate-modal-content-in {
+    animation: modal-content-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-modal-content-out {
+    animation: modal-content-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* Direct targeting of Radix UI Dialog for guaranteed animation */
+[data-radix-dialog-overlay][data-state="open"] {
+  animation: modal-fade-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-radix-dialog-overlay][data-state="closed"] {
+  animation: modal-fade-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-radix-dialog-content][data-state="open"] {
+  animation: modal-content-in 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-radix-dialog-content][data-state="closed"] {
+  animation: modal-content-out 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Custom scrollbar for webkit browsers */
@@ -488,18 +290,4 @@
 ::selection {
   background: hsl(var(--primary) / 0.2);
   color: hsl(var(--foreground));
-}
-
-/* Focus visible styles */
-*:focus-visible {
-  @apply focus-ring;
-}
-
-/* Smooth transitions for all interactive elements */
-button,
-a,
-input,
-select,
-textarea {
-  @apply transition-colors duration-200;
 }

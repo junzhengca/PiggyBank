@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Category, CategoryFormData } from '@/types';
 import { categoriesService } from '@/db/services/categoriesService';
+import { serializeDates, deserializeDates } from '@/lib/utils';
+import type { RootState } from '../index';
 
 interface CategoriesState {
-  categories: Category[];
+  categories: any[]; // Serialized categories with date strings
   loading: boolean;
   error: string | null;
 }
@@ -17,28 +19,32 @@ const initialState: CategoriesState = {
 export const fetchCategories = createAsyncThunk(
   'categories/fetchAll',
   async () => {
-    return await categoriesService.getAll();
+    const categories = await categoriesService.getAll();
+    return serializeDates(categories);
   }
 );
 
 export const fetchCategoriesByType = createAsyncThunk(
   'categories/fetchByType',
   async (type: 'income' | 'expense') => {
-    return await categoriesService.getByType(type);
+    const categories = await categoriesService.getByType(type);
+    return serializeDates(categories);
   }
 );
 
 export const createCategory = createAsyncThunk(
   'categories/create',
   async (data: CategoryFormData) => {
-    return await categoriesService.create(data);
+    const category = await categoriesService.create(data);
+    return serializeDates(category);
   }
 );
 
 export const updateCategory = createAsyncThunk(
   'categories/update',
   async ({ id, data }: { id: string; data: Partial<CategoryFormData> }) => {
-    return await categoriesService.update(id, data);
+    const category = await categoriesService.update(id, data);
+    return category ? serializeDates(category) : undefined;
   }
 );
 
@@ -98,5 +104,10 @@ const categoriesSlice = createSlice({
       });
   },
 });
+
+// Selectors with date deserialization
+export const selectCategories = (state: RootState): Category[] => {
+  return deserializeDates(state.categories.categories);
+};
 
 export default categoriesSlice.reducer;

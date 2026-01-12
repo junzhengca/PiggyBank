@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useTags } from '@/store/hooks';
 import { createTag, deleteTag } from '@/store/slices/tagsSlice';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,10 +7,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, Trash2, Tag } from 'lucide-react';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
 
 export default function Tags() {
   const dispatch = useAppDispatch();
-  const tags = useAppSelector((state) => state.tags.tags);
+  const tags = useTags();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -33,18 +34,34 @@ export default function Tags() {
     }
   };
 
+  // Register keyboard shortcut for 'c' to add tag
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add tag',
+    category: 'actions',
+    page: '/tags',
+    action: () => {
+      setIsOpen(true);
+    },
+  });
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold gradient-text">Tags</h1>
+          <h1 className="text-2xl font-bold">Tags</h1>
           <p className="text-sm text-muted-foreground mt-1">Organize transactions with custom tags</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="shadow-lg shadow-primary/25">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Tag
+            <Button className="shadow-lg shadow-primary/25 justify-between">
+              <div className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Tag
+              </div>
+              <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                C
+              </kbd>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -102,12 +119,11 @@ export default function Tags() {
               {tags.map((tag, index) => (
                 <div
                   key={tag.id}
-                  className="flex items-center justify-between p-3 border-b border-border hover:bg-muted/50 transition-all duration-300 group"
-                  style={{ animationDelay: `${index * 30}ms` }}
+                  className="flex items-center justify-between p-3 border-b border-border hover:bg-accent transition-colors group"
                 >
                   <div className="flex items-center space-x-3">
                     <div
-                      className="w-10 h-10 flex items-center justify-center rounded-full group-hover:scale-110 transition-transform"
+                      className="w-10 h-10 flex items-center justify-center rounded-full"
                       style={{ backgroundColor: tag.color + '20' }}
                     >
                       <div

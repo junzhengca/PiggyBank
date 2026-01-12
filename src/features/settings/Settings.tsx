@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAppSelector } from '@/store/hooks';
+import { useAccounts, useCategories, useTags, useTransactions, useBudgets } from '@/store/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,11 @@ import { ImportResult } from '@/types';
 import { downloadExport, importDataFromFile, clearAllData } from '@/lib/importExportService';
 
 export default function Settings() {
-  const accounts = useAppSelector((state) => state.accounts.accounts);
-  const categories = useAppSelector((state) => state.categories.categories);
-  const tags = useAppSelector((state) => state.tags.tags);
-  const transactions = useAppSelector((state) => state.transactions.transactions);
-  const budgets = useAppSelector((state) => state.budgets.budgets);
+  const accounts = useAccounts();
+  const categories = useCategories();
+  const tags = useTags();
+  const transactions = useTransactions();
+  const budgets = useBudgets();
   const [importResult, setImportResult] = useState<ImportResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);

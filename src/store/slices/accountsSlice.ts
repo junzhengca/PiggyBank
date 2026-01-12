@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Account, AccountFormData } from '@/types';
 import accountsService from '@/db/services/accountsService';
+import { serializeDates, deserializeDates } from '@/lib/utils';
+import type { RootState } from '../index';
 
 interface AccountsState {
-  accounts: Account[];
+  accounts: any[]; // Serialized accounts with date strings
   loading: boolean;
   error: string | null;
 }
@@ -17,21 +19,24 @@ const initialState: AccountsState = {
 export const fetchAccounts = createAsyncThunk(
   'accounts/fetchAll',
   async () => {
-    return await accountsService.getAll();
+    const accounts = await accountsService.getAll();
+    return serializeDates(accounts);
   }
 );
 
 export const createAccount = createAsyncThunk(
   'accounts/create',
   async (data: AccountFormData) => {
-    return await accountsService.create(data);
+    const account = await accountsService.create(data);
+    return serializeDates(account);
   }
 );
 
 export const updateAccount = createAsyncThunk(
   'accounts/update',
   async ({ id, data }: { id: string; data: Partial<AccountFormData> }) => {
-    return await accountsService.update(id, data);
+    const account = await accountsService.update(id, data);
+    return account ? serializeDates(account) : undefined;
   }
 );
 
@@ -46,7 +51,8 @@ export const deleteAccount = createAsyncThunk(
 export const markAccountAsReviewed = createAsyncThunk(
   'accounts/markAsReviewed',
   async (id: string) => {
-    return await accountsService.markAsReviewed(id);
+    const account = await accountsService.markAsReviewed(id);
+    return account ? serializeDates(account) : undefined;
   }
 );
 
@@ -113,5 +119,10 @@ const accountsSlice = createSlice({
       });
   },
 });
+
+// Selectors with date deserialization
+export const selectAccounts = (state: RootState): Account[] => {
+  return deserializeDates(state.accounts.accounts);
+};
 
 export default accountsSlice.reducer;

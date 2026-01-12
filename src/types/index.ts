@@ -15,6 +15,7 @@ export interface Account {
   currency: string;
   color?: string;
   icon?: string;
+  bankId?: string;
   creditCardDetails?: CreditCardDetails;
   lastReviewedAt?: Date;
   createdAt: Date;
@@ -28,6 +29,7 @@ export interface AccountFormData {
   currency: string;
   color?: string;
   icon?: string;
+  bankId?: string;
   creditCardDetails?: CreditCardDetails;
 }
 

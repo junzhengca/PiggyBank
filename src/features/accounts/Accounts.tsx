@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAccounts } from '@/store/hooks';
 import { createAccount, deleteAccount, markAccountAsReviewed } from '@/store/slices/accountsSlice';
 import { Account, AccountType } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Plus, Trash2, Wallet, CreditCard, PiggyBank, TrendingUp, CheckCircle, AlertTriangle } from 'lucide-react';
 import { ACCOUNT_TYPES } from '@/types/constants';
 import { isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
+import { useRegisterShortcut } from '@/components/keyboard/useKeyboardShortcuts';
+import { BANKS, getBankById } from '@/types/banks';
 
 const accountIcons: Record<string, JSX.Element> = {
   checking: <Wallet className="h-5 w-5" />,
@@ -22,9 +24,28 @@ const accountIcons: Record<string, JSX.Element> = {
   investment: <TrendingUp className="h-5 w-5" />,
 };
 
+// Helper component to render account icon with bank fallback
+function AccountIcon({ account, size = 'h-4 w-4' }: { account: Account; size?: string }) {
+  const [imageError, setImageError] = useState(false);
+  const bank = account.bankId ? getBankById(account.bankId) : null;
+  
+  if (bank && !imageError) {
+    return (
+      <img 
+        src={bank.icon} 
+        alt={bank.name} 
+        className="w-full h-full object-contain p-1"
+        onError={() => setImageError(true)}
+      />
+    );
+  }
+  
+  return <>{accountIcons[account.type] || <Wallet className={size} />}</>;
+}
+
 export default function Accounts() {
   const dispatch = useAppDispatch();
-  const accounts = useAppSelector((state) => state.accounts.accounts);
+  const accounts = useAccounts();
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState<{
     name: string;
@@ -33,6 +54,7 @@ export default function Accounts() {
     currency: string;
     color: string;
     icon: string;
+    bankId: string;
     creditCardDetails: {
       interestRate: string;
       statementDay: string;
@@ -45,6 +67,7 @@ export default function Accounts() {
     currency: 'USD',
     color: '#3b82f6',
     icon: '💳',
+    bankId: '',
     creditCardDetails: {
       interestRate: '',
       statementDay: '',
@@ -63,6 +86,7 @@ export default function Accounts() {
     dispatch(createAccount({
       ...formData,
       balance: parseFloat(formData.balance) || 0,
+      bankId: formData.bankId || undefined,
       creditCardDetails,
     }));
     setIsOpen(false);
@@ -73,6 +97,7 @@ export default function Accounts() {
       currency: 'USD',
       color: '#3b82f6',
       icon: '💳',
+      bankId: '',
       creditCardDetails: {
         interestRate: '',
         statementDay: '',
@@ -93,18 +118,34 @@ export default function Accounts() {
     dispatch(markAccountAsReviewed(id));
   };
 
+  // Register keyboard shortcut for 'c' to add account
+  useRegisterShortcut({
+    key: 'c',
+    description: 'Add account',
+    category: 'actions',
+    page: '/accounts',
+    action: () => {
+      setIsOpen(true);
+    },
+  });
+
   return (
     <div className="space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold gradient-text">Accounts</h1>
+          <h1 className="text-2xl font-bold">Accounts</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage your financial accounts</p>
         </div>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button className="shadow-lg shadow-primary/25">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Account
+            <Button className="shadow-lg shadow-primary/25 justify-between">
+              <div className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Add Account
+              </div>
+              <kbd className="ml-2 px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                C
+              </kbd>
             </Button>
           </DialogTrigger>
           <DialogContent>
@@ -134,6 +175,25 @@ export default function Accounts() {
                     {ACCOUNT_TYPES.map((type) => (
                       <SelectItem key={type.value} value={type.value}>
                         {type.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="bank">Bank (Optional)</Label>
+                <Select
+                  value={formData.bankId || 'none'}
+                  onValueChange={(value: string) => setFormData({ ...formData, bankId: value === 'none' ? '' : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a bank" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    {BANKS.map((bank) => (
+                      <SelectItem key={bank.id} value={bank.id}>
+                        {bank.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -225,94 +285,114 @@ export default function Accounts() {
         </Dialog>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {accounts.map((account: Account) => {
-          const needsReview = isAccountNeedsReview(account.lastReviewedAt);
-          const isCreditCard = account.type === 'credit';
-          const availableCredit = isCreditCard && account.creditCardDetails?.creditLimit
-            ? account.creditCardDetails.creditLimit + account.balance
-            : null;
-          
-          return (
-            <Link key={account.id} to={`/accounts/${account.id}`} className="group">
-              <Card className={`border-l-4 h-full cursor-pointer transition-all ${needsReview ? 'border-amber-500/50 bg-amber-50/30 dark:bg-amber-950/10' : ''}`} style={{ borderLeftColor: account.color }}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base flex items-center gap-2">
-                        <div className="w-10 h-10 bg-primary/10 flex items-center justify-center">
-                          {accountIcons[account.type] || <Wallet className="h-5 w-5" />}
+      <Card>
+        <CardHeader>
+          <CardTitle>Accounts</CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="divide-y divide-border">
+            {/* Table Header */}
+            <div className="grid grid-cols-12 gap-4 px-6 py-3 text-xs font-medium text-muted-foreground border-b bg-muted/50">
+              <div className="col-span-1"></div>
+              <div className="col-span-4">Name</div>
+              <div className="col-span-2">Type</div>
+              <div className="col-span-2">Last Reviewed</div>
+              <div className="col-span-2 text-right">Balance</div>
+              <div className="col-span-1"></div>
+            </div>
+            
+            {/* Table Body */}
+            <div className="divide-y divide-border">
+              {accounts.map((account: Account) => {
+                const needsReview = isAccountNeedsReview(account.lastReviewedAt);
+                const isCreditCard = account.type === 'credit';
+                const availableCredit = isCreditCard && account.creditCardDetails?.creditLimit
+                  ? account.creditCardDetails.creditLimit + account.balance
+                  : null;
+                return (
+                  <Link 
+                    key={account.id} 
+                    to={`/accounts/${account.id}`} 
+                    className="block group"
+                  >
+                    <div className="grid grid-cols-12 gap-4 px-6 py-3 hover:bg-accent transition-colors items-center">
+                      <div className="col-span-1">
+                        <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center overflow-hidden">
+                          <AccountIcon account={account} size="h-4 w-4" />
                         </div>
-                        <span>{account.name}</span>
-                      {needsReview && (
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <AlertTriangle className="h-4 w-4 text-amber-500" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>This account hasn't been reviewed in over a week</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      )}
-                    </CardTitle>
-                    <div className="flex gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={(e) => handleMarkAsReviewed(e, account.id)}
-                        className="text-success hover:text-success hover:bg-success/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Mark as reviewed"
-                      >
-                        <CheckCircle className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleDelete(account.id);
-                        }}
-                        className="text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-8 h-8 bg-primary/10 flex items-center justify-center">
-                      {accountIcons[account.type] || <Wallet className="h-4 w-4" />}
-                    </div>
-                    <span className="text-xs text-muted-foreground capitalize">{account.type}</span>
-                  </div>
-                  <div className="text-xl font-bold amount">${account.balance.toFixed(2)}</div>
-                  <div className="text-xs text-muted-foreground">{account.currency}</div>
-                  {isCreditCard && account.creditCardDetails?.creditLimit && (
-                    <div className="text-xs text-muted-foreground">
-                      {availableCredit !== null && (
-                        <span className="text-success font-medium">
-                          ${availableCredit.toFixed(2)} available
+                      </div>
+                      <div className="col-span-4">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">{account.name}</span>
+                          {needsReview && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>This account hasn't been reviewed in over a week</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                      </div>
+                      <div className="col-span-2">
+                        <span className="text-sm text-muted-foreground capitalize">{account.type}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <span className={`text-sm ${needsReview ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
+                          {formatLastReviewed(account.lastReviewedAt)}
                         </span>
-                      )}{' '}
-                      of ${account.creditCardDetails.creditLimit.toFixed(2)} limit
+                      </div>
+                      <div className="col-span-2 text-right">
+                        <div className="space-y-0.5">
+                          <div className="amount font-semibold text-sm">
+                            ${account.balance.toFixed(2)} {account.currency}
+                          </div>
+                          {isCreditCard && account.creditCardDetails?.creditLimit && availableCredit !== null && (
+                            <div className="text-xs text-success">
+                              ${availableCredit.toFixed(2)} available
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="col-span-1 flex justify-end gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={(e) => handleMarkAsReviewed(e, account.id)}
+                          className="h-7 w-7 text-success hover:text-success hover:bg-success/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                          title="Mark as reviewed"
+                        >
+                          <CheckCircle className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDelete(account.id);
+                          }}
+                          className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                  <div className={`text-xs ${needsReview ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
-                    {formatLastReviewed(account.lastReviewedAt)}
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          );
-        })}
-      </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {accounts.length === 0 && (
-        <Card className="md:col-span-2 lg:col-span-3">
+        <Card>
           <CardContent className="flex flex-col items-center justify-center py-8">
-            <div className="p-3 bg-muted mb-3">
+            <div className="p-3 bg-muted rounded-md mb-3">
               <Wallet className="h-10 w-10 text-muted-foreground" />
             </div>
             <p className="text-sm text-muted-foreground text-center">No accounts yet.</p>

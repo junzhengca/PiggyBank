@@ -50,12 +50,14 @@ export function KeyboardHelpDialog() {
                   {shortcuts.map((shortcut, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-3 border-b border-border hover:bg-muted transition-colors"
+                      className="flex items-center justify-between p-3 rounded-md border border-border hover:bg-accent transition-colors"
                     >
                       <span className="text-sm text-muted-foreground">
                         {shortcut.description}
                       </span>
-                      <kbd className="kbd">{formatShortcut(shortcut)}</kbd>
+                      <kbd className="px-1.5 py-0.5 text-xs font-mono bg-muted text-muted-foreground rounded border border-border">
+                        {formatShortcut(shortcut)}
+                      </kbd>
                     </div>
                   ))}
                 </div>

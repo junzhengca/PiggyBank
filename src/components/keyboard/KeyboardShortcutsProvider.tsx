@@ -86,7 +86,8 @@ export function KeyboardShortcutsProvider({ children }: KeyboardShortcutsProvide
           '4': '/categories',
           '5': '/budgets',
           '6': '/analytics',
-          '7': '/settings',
+          '7': '/tags',
+          '8': '/settings',
         };
         
         if (navShortcuts[event.key] && location.pathname !== navShortcuts[event.key]) {

@@ -91,6 +91,66 @@ export function getPeriodStartDate(period: 'weekly' | 'monthly' | 'yearly'): Dat
 }
 
 /**
+ * Calculates the end date for a budget based on its period and start date.
+ * Returns the end of the period (end of week, month, or year).
+ */
+export function calculateBudgetEndDate(startDate: Date, period: 'weekly' | 'monthly' | 'yearly'): Date {
+  const start = new Date(startDate);
+  
+  switch (period) {
+    case 'weekly':
+      // End of week (7 days after start, at end of day)
+      const weekEnd = new Date(Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth(),
+        start.getUTCDate() + 6,
+        23, 59, 59, 999
+      ));
+      return weekEnd;
+    case 'monthly':
+      // End of month
+      const monthEnd = new Date(Date.UTC(
+        start.getUTCFullYear(),
+        start.getUTCMonth() + 1,
+        0, // Day 0 = last day of previous month
+        23, 59, 59, 999
+      ));
+      return monthEnd;
+    case 'yearly':
+      // End of year
+      const yearEnd = new Date(Date.UTC(
+        start.getUTCFullYear(),
+        11, // December (0-indexed)
+        31,
+        23, 59, 59, 999
+      ));
+      return yearEnd;
+  }
+}
+
+/**
+ * Compares two dates ignoring time components (only compares year, month, day).
+ * Returns true if date1 is on or before date2.
+ * Uses UTC methods for consistent comparison.
+ */
+export function isDateOnOrBefore(date1: Date, date2: Date): boolean {
+  const d1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate());
+  const d2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate());
+  return d1 <= d2;
+}
+
+/**
+ * Compares two dates ignoring time components (only compares year, month, day).
+ * Returns true if date1 is on or after date2.
+ * Uses UTC methods for consistent comparison.
+ */
+export function isDateOnOrAfter(date1: Date, date2: Date): boolean {
+  const d1 = Date.UTC(date1.getUTCFullYear(), date1.getUTCMonth(), date1.getUTCDate());
+  const d2 = Date.UTC(date2.getUTCFullYear(), date2.getUTCMonth(), date2.getUTCDate());
+  return d1 >= d2;
+}
+
+/**
  * Checks if an account needs review (last reviewed more than a week ago).
  * Returns true if lastReviewedAt is undefined or more than 7 days ago.
  */
@@ -180,4 +240,72 @@ export function formatDayHeaderDate(date: Date): string {
  */
 export function sortDateKeysDesc(dateKeys: string[]): string[] {
   return dateKeys.sort((a, b) => b.localeCompare(a));
+}
+
+/**
+ * Serializes Date objects to ISO strings for Redux storage.
+ * Recursively processes objects and arrays to convert all Date instances.
+ */
+export function serializeDates<T>(data: T): T extends Date ? string : T {
+  if (data === null || data === undefined) {
+    return data as any;
+  }
+  
+  if (data instanceof Date) {
+    return data.toISOString() as any;
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(item => serializeDates(item)) as any;
+  }
+  
+  if (typeof data === 'object') {
+    const serialized: any = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        serialized[key] = serializeDates((data as any)[key]);
+      }
+    }
+    return serialized as any;
+  }
+  
+  return data as any;
+}
+
+/**
+ * Deserializes ISO date strings back to Date objects.
+ * Recursively processes objects and arrays to convert date strings.
+ */
+export function deserializeDates<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+  
+  if (typeof data === 'string') {
+    // Check if it's an ISO date string by trying to parse it
+    // ISO date strings typically contain 'T' and match date patterns
+    if (data.includes('T') && data.length >= 19) {
+      const date = new Date(data);
+      // Only convert if it's a valid date and the string looks like an ISO date
+      if (!isNaN(date.getTime()) && /^\d{4}-\d{2}-\d{2}T/.test(data)) {
+        return date as any;
+      }
+    }
+  }
+  
+  if (Array.isArray(data)) {
+    return data.map(item => deserializeDates(item)) as any;
+  }
+  
+  if (typeof data === 'object') {
+    const deserialized: any = {};
+    for (const key in data) {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        deserialized[key] = deserializeDates((data as any)[key]);
+      }
+    }
+    return deserialized;
+  }
+  
+  return data;
 }

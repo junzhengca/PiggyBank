@@ -1,11 +1,12 @@
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAccounts, useTransactions, useCategories } from '@/store/hooks';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TransactionTable } from '@/components/transactions/TransactionTable';
 import { formatDisplayDate, isAccountNeedsReview, formatLastReviewed } from '@/lib/utils';
-import { Wallet, TrendingUp, TrendingDown, ArrowRight, ArrowUp, ArrowDown, PiggyBank, CreditCard, CheckCircle, AlertTriangle, CreditCard as CreditCardIcon } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, ArrowRight, PiggyBank, CreditCard, CheckCircle, AlertTriangle, CreditCard as CreditCardIcon } from 'lucide-react';
 import { markAccountAsReviewed } from '@/store/slices/accountsSlice';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const accountIcons: Record<string, JSX.Element> = {
   checking: <Wallet className="h-4 w-4" />,
@@ -17,9 +18,10 @@ const accountIcons: Record<string, JSX.Element> = {
 
 export default function Dashboard() {
   const dispatch = useAppDispatch();
-  const accounts = useAppSelector((state) => state.accounts.accounts);
-  const transactions = useAppSelector((state) => state.transactions.transactions);
-  const categories = useAppSelector((state) => state.categories.categories);
+  const navigate = useNavigate();
+  const accounts = useAccounts();
+  const transactions = useTransactions();
+  const categories = useCategories();
 
   const totalBalance = accounts.reduce((sum, acc) => sum + acc.balance, 0);
   const totalIncome = transactions
@@ -40,14 +42,9 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold gradient-text">Dashboard</h1>
-          <p className="text-sm text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
-        </div>
-        <div className="hidden sm:flex items-center justify-center w-12 h-12 bg-gradient-to-br from-primary to-primary-light shadow-lg shadow-primary/25">
-          <PiggyBank className="h-6 w-6 text-primary-foreground" />
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <p className="text-sm text-muted-foreground mt-1">Welcome back! Here's your financial overview.</p>
       </div>
 
       {/* Summary Cards */}
@@ -128,51 +125,51 @@ export default function Dashboard() {
             Accounts
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           {accounts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="p-3 bg-muted mb-3">
+            <div className="flex flex-col items-center justify-center py-8 text-center px-6">
+              <div className="p-3 bg-muted rounded-md mb-3">
                 <Wallet className="h-6 w-6 text-muted-foreground" />
               </div>
               <p className="text-sm text-muted-foreground">No accounts yet.</p>
               <p className="text-xs text-muted-foreground mt-1">Add your first account to get started.</p>
             </div>
           ) : (
-            <div className="excel-table">
-              {/* Table Header */}
-              <div className="excel-table-header">
-                <div className="excel-table-header-cell col-icon"></div>
-                <div className="excel-table-header-cell col-name">Name</div>
-                <div className="excel-table-header-cell col-account-type hide-on-mobile">Type</div>
-                <div className="excel-table-header-cell col-reviewed hide-on-tablet">Last Reviewed</div>
-                <div className="excel-table-header-cell col-balance">Balance</div>
-                <div className="excel-table-header-cell w-10 flex-shrink-0"></div>
-              </div>
-              {/* Table Body */}
-              <div className="excel-table-body">
-                {accounts.map((account) => {
-                  const needsReview = isAccountNeedsReview(account.lastReviewedAt);
-                  const isCreditCard = account.type === 'credit';
-                  const availableCredit = isCreditCard && account.creditCardDetails?.creditLimit
-                    ? account.creditCardDetails.creditLimit + account.balance
-                    : null;
-                  
-                  return (
-                    <Link key={account.id} to={`/accounts/${account.id}`} className="block">
-                      <div className="excel-table-row group">
-                        <div className="excel-table-cell col-icon">
-                          <div className="icon-cell icon-account">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b bg-muted/50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground w-12"></th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground">Name</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">Type</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-muted-foreground hidden lg:table-cell">Last Reviewed</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground">Balance</th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-muted-foreground w-12"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {accounts.map((account) => {
+                    const needsReview = isAccountNeedsReview(account.lastReviewedAt);
+                    const isCreditCard = account.type === 'credit';
+                    const availableCredit = isCreditCard && account.creditCardDetails?.creditLimit
+                      ? account.creditCardDetails.creditLimit + account.balance
+                      : null;
+                    
+                    return (
+                      <tr key={account.id} className="group hover:bg-accent transition-colors cursor-pointer" onClick={() => navigate(`/accounts/${account.id}`)}>
+                        <td className="px-6 py-3">
+                          <div className="w-8 h-8 bg-primary/10 rounded-md flex items-center justify-center">
                             {accountIcons[account.type] || <Wallet className="h-4 w-4" />}
                           </div>
-                        </div>
-                        <div className="excel-table-cell col-name">
+                        </td>
+                        <td className="px-6 py-3">
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold">{account.name}</span>
+                            <span className="font-semibold text-sm">{account.name}</span>
                             {needsReview && (
                               <TooltipProvider>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
-                                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                                    <AlertTriangle className="h-3.5 w-3.5 text-amber-500 flex-shrink-0" />
                                   </TooltipTrigger>
                                   <TooltipContent>
                                     <p>This account hasn't been reviewed in over a week</p>
@@ -181,42 +178,46 @@ export default function Dashboard() {
                               </TooltipProvider>
                             )}
                           </div>
-                        </div>
-                        <div className="excel-table-cell col-account-type hide-on-mobile">
-                          <span className="text-muted-foreground capitalize">{account.type}</span>
-                        </div>
-                        <div className={`excel-table-cell col-reviewed hide-on-tablet ${needsReview ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
-                          {formatLastReviewed(account.lastReviewedAt)}
-                        </div>
-                        <div className="excel-table-cell col-balance">
-                          <div className="text-right">
-                            <span className="amount font-semibold">${account.balance.toFixed(2)}</span>
+                        </td>
+                        <td className="px-6 py-3 hidden md:table-cell">
+                          <span className="text-sm text-muted-foreground capitalize">{account.type}</span>
+                        </td>
+                        <td className="px-6 py-3 hidden lg:table-cell">
+                          <span className={`text-sm ${needsReview ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
+                            {formatLastReviewed(account.lastReviewedAt)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          <div className="space-y-0.5">
+                            <div className="amount font-semibold text-sm">
+                              ${account.balance.toFixed(2)} {account.currency}
+                            </div>
                             {isCreditCard && availableCredit !== null && (
-                              <div className="text-xs text-muted-foreground">
-                                <span className="text-success">${availableCredit.toFixed(2)} available</span>
+                              <div className="text-xs text-success">
+                                ${availableCredit.toFixed(2)} available
                               </div>
                             )}
-                            {!isCreditCard && (
-                              <div className="text-xs text-muted-foreground">{account.currency}</div>
-                            )}
                           </div>
-                        </div>
-                        <div className="excel-table-cell w-10 flex-shrink-0">
+                        </td>
+                        <td className="px-6 py-3 text-right">
                           <Button
                             size="icon"
                             variant="ghost"
-                            onClick={(e) => handleMarkAsReviewed(e, account.id)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsReviewed(e, account.id);
+                            }}
                             className="h-7 w-7 text-success hover:text-success hover:bg-success/10 opacity-0 group-hover:opacity-100 transition-opacity"
                             title="Mark as reviewed"
                           >
                             <CheckCircle className="h-3.5 w-3.5" />
                           </Button>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </CardContent>
@@ -230,62 +231,29 @@ export default function Dashboard() {
             Recent Transactions
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          {transactions.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="p-3 bg-muted mb-3">
-                <ArrowRight className="h-6 w-6 text-muted-foreground" />
+        <CardContent className="p-0">
+          <TransactionTable
+            transactions={transactions}
+            categories={categories}
+            columns={[
+              { key: 'icon', label: '', className: 'w-12' },
+              { key: 'vendor', label: 'Vendor' },
+              { key: 'category', label: 'Category', hideOnMobile: true },
+              { key: 'date', label: 'Date', hideOnTablet: true },
+              { key: 'type', label: 'Type', hideOnMobile: true },
+              { key: 'amount', label: 'Amount', className: 'text-right' },
+            ]}
+            limit={5}
+            layout="table"
+            emptyMessage={
+              <div className="flex flex-col items-center justify-center py-8 text-center px-6">
+                <div className="p-3 bg-muted rounded-md mb-3">
+                  <ArrowRight className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <p className="text-sm text-muted-foreground">No transactions yet.</p>
               </div>
-              <p className="text-sm text-muted-foreground">No transactions yet.</p>
-            </div>
-          ) : (
-            <div className="excel-table">
-              {/* Table Header */}
-              <div className="excel-table-header">
-                <div className="excel-table-header-cell col-icon"></div>
-                <div className="excel-table-header-cell col-vendor">Vendor</div>
-                <div className="excel-table-header-cell col-category hide-on-mobile">Category</div>
-                <div className="excel-table-header-cell col-date hide-on-tablet">Date</div>
-                <div className="excel-table-header-cell col-type hide-on-mobile">Type</div>
-                <div className="excel-table-header-cell col-amount">Amount</div>
-              </div>
-              {/* Table Body */}
-              <div className="excel-table-body">
-                {transactions.slice(0, 5).map((transaction) => {
-                  const category = categories.find((c) => c.id === transaction.categoryId);
-                  return (
-                    <div key={transaction.id} className="excel-table-row group">
-                      <div className="excel-table-cell col-icon">
-                        <div className={`icon-cell ${transaction.type === 'income' ? 'icon-income' : 'icon-expense'}`}>
-                          {category?.icon || (transaction.type === 'income' ? '↑' : '↓')}
-                        </div>
-                      </div>
-                      <div className="excel-table-cell col-vendor">
-                        <span className="font-semibold">{transaction.vendor}</span>
-                      </div>
-                      <div className="excel-table-cell col-category hide-on-mobile">
-                        <span className="text-muted-foreground">{category?.name || 'Unknown'}</span>
-                      </div>
-                      <div className="excel-table-cell col-date hide-on-tablet">
-                        <span className="text-muted-foreground">{formatDisplayDate(transaction.date)}</span>
-                      </div>
-                      <div className="excel-table-cell col-type hide-on-mobile">
-                        <div className={transaction.type === 'income' ? 'status-income' : 'status-expense'}>
-                          {transaction.type === 'income' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />}
-                          {transaction.type}
-                        </div>
-                      </div>
-                      <div className="excel-table-cell col-amount">
-                        <span className={`amount font-semibold ${transaction.type === 'income' ? 'text-success' : 'text-destructive'}`}>
-                          {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+            }
+          />
         </CardContent>
       </Card>
     </div>
